@@ -18,6 +18,8 @@ services:
     build: .
     container_name: daur_menu_app
     restart: always
+    env_file:
+      - ./daur-menu-backend/.env
     ports:
       - "3000:3000"
     environment:

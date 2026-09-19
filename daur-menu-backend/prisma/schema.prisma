@@ -1,5 +1,3 @@
-// daur-menu-backend/prisma/schema.prisma
-
 generator client {
   provider = "prisma-client-js"
   output   = "../prisma/generated/client"
@@ -10,27 +8,36 @@ datasource db {
 }
 
 model Restaurant {
-  id         String     @id @default(uuid())
-  email      String     @unique
-  password   String
-  name       String?
-  menus      Menu[]
-  staff      Staff[]
-  orders     Order[]
-  dishes     Dish[]     // Связь с блюдами ресторана
-  categories Category[] // Связь с категориями
-  banners    PromotionBanner[]
-  ordersThreadId String?
-  waitersThreadId String?
+  id              String            @id @default(uuid())
+  email           String            @unique
+  password        String
+  name            String?
+  ordersThreadId  String?
   reviewsThreadId String?
+  waitersThreadId String?
+  ownerTelegramId String?
+  paidUntil       DateTime?
+  paymentStatus   String            @default("trial")
+  tariffId        String?
+  createdAt       DateTime          @default(now())
+  status          String            @default("TRIAL")
+  trialEndsAt     DateTime?
+  categories      Category[]
+  dishes          Dish[]
+  menus           Menu[]
+  orders          Order[]
+  PaymentRequest  PaymentRequest[]
+  banners         PromotionBanner[]
+  Tariff          Tariff?           @relation(fields: [tariffId], references: [id])
+  staff           Staff[]
 }
 
 model Menu {
   id               String     @id @default(uuid())
-  info             String?    @db.Text
-  items            String?    @db.Text // Можно оставить как резерв или для метаданных
-  cats             String?    @db.Text
-  general_settings String?    @db.Text
+  info             String?
+  items            String?
+  cats             String?
+  general_settings String?
   restaurantId     String
   restaurant       Restaurant @relation(fields: [restaurantId], references: [id], onDelete: Cascade)
 }
@@ -41,32 +48,32 @@ model Category {
   orderIndex   Int        @default(0)
   restaurantId String
   restaurant   Restaurant @relation(fields: [restaurantId], references: [id], onDelete: Cascade)
-  dishes       Dish[]     // Связь: блюда в этой категории
+  dishes       Dish[]
 }
 
 model Dish {
-  id           String      @id @default(uuid())
-  name         String
-  price        Float
-  priceGlass   Float?
-  priceGlassLabel String?
-  priceBottle  Float?
+  id               String      @id @default(uuid())
+  name             String
+  price            Float
+  priceGlass       Float?
+  priceGlassLabel  String?
+  priceBottle      Float?
   priceBottleLabel String?
-  description  String?     @db.Text
-  image        String?
-  categoryId   String?
-  category     Category?   @relation(fields: [categoryId], references: [id], onDelete: SetNull)
-  restaurantId String      
-  restaurant   Restaurant  @relation(fields: [restaurantId], references: [id], onDelete: Cascade) 
-  isAvailable  Boolean     @default(true)
-  noNuts       Boolean     @default(false)
-  noLactose    Boolean     @default(false)
-  noGluten     Boolean     @default(false)
-  vegetarian   Boolean     @default(false)
-  vegan        Boolean     @default(false)
-  tags         DishTag[]
-  orderItems   OrderItem[]
-  modifiers   Json?
+  description      String?
+  image            String?
+  categoryId       String?
+  restaurantId     String
+  isAvailable      Boolean     @default(true)
+  noNuts           Boolean     @default(false)
+  noLactose        Boolean     @default(false)
+  noGluten         Boolean     @default(false)
+  vegan            Boolean     @default(false)
+  vegetarian       Boolean     @default(false)
+  modifiers        Json?
+  category         Category?   @relation(fields: [categoryId], references: [id])
+  restaurant       Restaurant  @relation(fields: [restaurantId], references: [id], onDelete: Cascade)
+  tags             DishTag[]
+  orderItems       OrderItem[]
 }
 
 model Tag {
@@ -89,8 +96,8 @@ model Staff {
   name         String
   email        String     @unique
   password     String
-  role         String     @default("Администратор")
-  status       String     @default("Активен")
+  role         String     @default("РђРґРјРёРЅРёСЃС‚СЂР°С‚РѕСЂ")
+  status       String     @default("РђРєС‚РёРІРµРЅ")
   restaurantId String
   restaurant   Restaurant @relation(fields: [restaurantId], references: [id], onDelete: Cascade)
 }
@@ -109,11 +116,11 @@ model Order {
   comment       String?
   rejectionNote String?
   totalPrice    Float
-  rating        Int?
-  feedback      String?     @db.Text
   createdAt     DateTime    @default(now())
-  updatedAt     DateTime    @updatedAt @default(now())
+  updatedAt     DateTime    @default(now()) @updatedAt
   restaurantId  String
+  feedback      String?
+  rating        Int?
   restaurant    Restaurant  @relation(fields: [restaurantId], references: [id], onDelete: Cascade)
   items         OrderItem[]
 }
@@ -121,16 +128,17 @@ model Order {
 model OrderItem {
   id       String  @id @default(uuid())
   orderId  String
-  order    Order   @relation(fields: [orderId], references: [id], onDelete: Cascade)
   dishId   String?
-  dish     Dish?   @relation(fields: [dishId], references: [id], onDelete: SetNull)
   name     String
   price    Float
   quantity Int
+  dish     Dish?   @relation(fields: [dishId], references: [id])
+  order    Order   @relation(fields: [orderId], references: [id], onDelete: Cascade)
 }
+
 model PromotionBanner {
   id           String     @id @default(uuid())
-  imageUrl     String     @db.Text
+  imageUrl     String
   isActive     Boolean    @default(true)
   targetItemId String?
   order        Int        @default(0)
@@ -138,4 +146,28 @@ model PromotionBanner {
   updatedAt    DateTime   @updatedAt
   restaurantId String
   restaurant   Restaurant @relation(fields: [restaurantId], references: [id], onDelete: Cascade)
+}
+
+model PaymentRequest {
+  id           String     @id
+  restaurantId String
+  tariffId     String
+  amount       Float
+  months       Int
+  status       String     @default("pending")
+  createdAt    DateTime   @default(now())
+  Restaurant   Restaurant @relation(fields: [restaurantId], references: [id], onDelete: Cascade)
+  Tariff       Tariff     @relation(fields: [tariffId], references: [id])
+}
+
+model Tariff {
+  id                 String           @id
+  name               String
+  pricePerMonth      Float
+  pricePer6Months    Float?
+  pricePerYear       Float?
+  features           String?
+  paymentInstruction String?
+  PaymentRequest     PaymentRequest[]
+  Restaurant         Restaurant[]
 }

@@ -1,12 +1,9 @@
 const fs = require('fs');
-const path = 'src/components/client/PromoBanners.vue';
-let code = fs.readFileSync(path, 'utf8');
 
-code = code.replace(
-  /><\/div>\s*<\/div>\s*<\/div>\s*<\/div>/,
-  '></div>\n    </div>\n  </div>'
-);
+let code = fs.readFileSync('daur-menu-backend/index.js', 'utf8');
 
-fs.writeFileSync(path, code);
-console.log('Fixed syntax error in PromoBanners.vue');
+const regex = /\n    if \(\!restaurant\) return res\.status\(404\)\.json\(\{ error: 'Ресторан не найден' \}\);[\s\S]*?res\.status\(500\)\.json\(\{ error: 'Ошибка сервера: ' \+ err\.message \}\);\n  \}\n\}\);\n/;
 
+code = code.replace(regex, '');
+fs.writeFileSync('daur-menu-backend/index.js', code);
+console.log('Fixed syntax again');

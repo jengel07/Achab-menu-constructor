@@ -229,6 +229,16 @@ export const staffApi = {
 // ============================================================
 
 export const superAdminApi = {
+  getTariffs: () => request<any[]>('/api/tariffs'),
+  updateTariff: (id: string, data: any) => request<any>(`/api/tariffs/${id}`, { method: 'PUT', body: JSON.stringify(data) }),
+  createTariff: (data: any) => request<any>('/api/tariffs', { method: 'POST', body: JSON.stringify(data) }),
+  deleteTariff: (id: string) => request<any>(`/api/tariffs/${id}`, { method: 'DELETE' }),
+  
+  getPaymentRequests: () => request<any[]>('/api/payment-requests'),
+  confirmPaymentRequest: (id: string) => request<any>(`/api/payment-requests/${id}/confirm`, { method: 'PUT' }),
+  rejectPaymentRequest: (id: string) => request<any>(`/api/payment-requests/${id}/reject`, { method: 'PUT' }),
+  updateRestaurantTariff: (id: string, tariffId: string, months: number) => request<any>(`/api/superadmin/restaurants/${id}/tariff`, { method: 'PUT', body: JSON.stringify({ tariffId, months }) }),
+
   /** Общая статистика платформы */
   getStats: () =>
     request<{ success: boolean; restaurantCount: number; staffCount: number; orderCount: number }>(
@@ -248,8 +258,8 @@ export const superAdminApi = {
     }>('/api/superadmin/restaurants'),
 
   /** Удалить ресторан со всеми данными */
-  deleteRestaurant: (id: string) =>
-    request<{ success: boolean }>(`/api/superadmin/restaurants/${id}`, { method: 'DELETE' }),
+  deleteRestaurant: (id: string) => request<{ success: boolean }>(`/api/superadmin/restaurants/${id}`, { method: 'DELETE' }),
+  toggleBlockRestaurant: (id: string, block: boolean) => request<{ success: boolean }>(`/api/superadmin/restaurants/${id}/toggle-block`, { method: 'POST', body: JSON.stringify({ block }) }),
 
   /** Войти в аккаунт другого ресторана */
   loginAs: (restaurantId: string) =>

@@ -17,6 +17,7 @@ import QrCodeEditor from './components/QrCodeEditor.vue';
 import OrderSettingsEditor from './components/OrderSettingsEditor.vue';
 import PhoneMockupContent from './components/PhoneMockupContent.vue';
 import BannerManager from './components/admin/BannerManager.vue';
+import MyTariffContent from './components/MyTariffContent.vue';
 
 import {
   Image as ImageIcon,
@@ -48,6 +49,34 @@ let API_URL = (import.meta as any).env.VITE_API_URL;
 if (!API_URL || /^(?:[0-9]{1,3}\.){3}[0-9]{1,3}$/.test(window.location.hostname) || window.location.hostname === 'localhost') {
   API_URL = `http://${window.location.hostname}:3000`;
 }
+
+const isBlocked = ref(false);
+const checkBilling = async () => {
+  try {
+    const token = localStorage.getItem('authToken');
+    let API_URL_VAR = import.meta.env.VITE_API_URL || 'http://localhost:3000';
+    if (!API_URL_VAR || /^(?:[0-9]{1,3}\.){3}[0-9]{1,3}$/.test(window.location.hostname) || window.location.hostname === 'localhost') {
+      API_URL_VAR = `http://${window.location.hostname}:3000`;
+    }
+    const res = await fetch(`${API_URL_VAR}/api/my-restaurant-status`, { headers: { 'Authorization': `Bearer ${token}` } });
+    if (res.ok) {
+      const r = await res.json();
+      if (r.status === 'BLOCKED') {
+        isBlocked.value = true;
+      } else if (r.status === 'PENDING_PAYMENT' || r.status === 'ACTIVE' || r.status === 'TRIAL') {
+        const now = new Date();
+        const paidDate = r.paidUntil ? new Date(r.paidUntil) : new Date(0);
+        const trialDate = r.trialEndsAt ? new Date(r.trialEndsAt) : new Date(0);
+        if (r.status === 'TRIAL' && trialDate < now) isBlocked.value = true;
+        if ((r.status === 'PENDING_PAYMENT' || r.status === 'ACTIVE') && paidDate < now) isBlocked.value = true;
+      }
+      if (isBlocked.value && sidebarView.value !== 'payment') {
+        sidebarView.value = 'payment';
+      }
+    }
+  } catch (e) { console.error('Billing check failed', e); }
+};
+
 const router = useRouter();
 const menuStore = useMenuStore();
 
@@ -61,7 +90,7 @@ const fileInputRef = ref<HTMLInputElement | null>(null);
 // SIDEBAR STATE
 // ═══════════════════════════════════════════════════════
 const isMenuOpen = ref(false);
-type SidebarView = 'main' | 'orders' | 'staff' | 'payment' | 'profile' | 'filters' | 'trash';
+type SidebarView = 'main' | 'orders' | 'staff' | 'payment' | 'profile' | 'filters' | 'trash' | 'tariff';
 const sidebarView = ref<SidebarView>('main');
 
 const closeSidebar = () => {
@@ -79,10 +108,12 @@ const sidebarTitle = computed(() => ({
   main: 'Achab',
   orders: 'Заказы',
   staff: 'Персонал',
-  payment: 'Оплата',
+  payment: 'Моя подписка',
   profile: 'Профиль',
   filters: 'Фильтры и теги',
   trash: 'Корзина',
+    tariff: 'Мой тариф',
+    tariff: 'Мой тариф',
 }[sidebarView.value]));
 
 // ─── ORDERS ───────────────────────────────────────────
@@ -504,7 +535,14 @@ watch([() => menuStore.items, () => menuStore.categories, () => menuStore.restau
   }
 }, { deep: true });
 
+watch(isBlocked, (blocked) => {
+  if (blocked) {
+    sidebarView.value = 'payment';
+  }
+}, { immediate: true });
+
 onMounted(async () => {
+  await checkBilling();
   const savedTheme = localStorage.getItem('constructorTheme');
   if (savedTheme === 'light') isLightTheme.value = true;
 
@@ -539,7 +577,10 @@ const updateRestaurantInfo = (newData: typeof menuStore.restaurantInfo) => {
 
     <input type="file" ref="fileInputRef" style="display: none" accept=".xlsx,.xls,.json" multiple @change="handleFileUpload" />
 
-    <div class="constructor-layout">
+    <div v-if="isBlocked" style="position: fixed; top: 0; left: 0; right: 0; background: #dc3545; color: white; padding: 15px; text-align: center; z-index: 9999; font-weight: bold; font-size: 16px;">
+      ВНИМАНИЕ: Ваш аккаунт заблокирован за неуплату. Оплатите подписку для восстановления доступа (публичное меню также скрыто).
+    </div>
+    <div class="constructor-layout" :style="isBlocked && sidebarView !== 'payment' ? 'pointer-events: none; opacity: 0.5;' : ''">
 
       <aside class="sidebar">
         <div class="sidebar-header">
@@ -596,7 +637,7 @@ const updateRestaurantInfo = (newData: typeof menuStore.restaurantInfo) => {
           <h1 class="tab-title">Настройка раздела</h1>
         </header>
 
-        <div class="editor-content">
+        <div class="editor-content" :style="isBlocked && sidebarView !== 'payment' ? 'pointer-events: none; opacity: 0.5;' : ''">
           <MenuEditor v-if="activeTab === 'navigation'" :items="menuStore.items" :categories="menuStore.categories"
             @update-items="handleUpdateItems"
             @update-categories="(cats) => { menuStore.updateCategories(cats); syncToTableStorage(); }" />
@@ -661,9 +702,10 @@ const updateRestaurantInfo = (newData: typeof menuStore.restaurantInfo) => {
             </button>
             
             <button class="smenu-nav-item" @click="openSidebarView('payment')">
-              <CreditCard :size="18" />
-              <span>Оплата</span>
-            </button>
+                <CreditCard :size="18" />
+                <span>Моя подписка</span>
+              </button>
+              
             <button class="smenu-nav-item" @click="openSidebarView('profile')">
               <User :size="18" />
               <span>Профиль</span>
@@ -820,50 +862,10 @@ const updateRestaurantInfo = (newData: typeof menuStore.restaurantInfo) => {
         <!-- ══ PAYMENT VIEW ══ -->
         <template v-else-if="sidebarView === 'payment'">
           <div class="smenu-scrollable">
-            <p class="smenu-section-desc">Выберите способы оплаты, которые принимает ваше заведение.</p>
-
-            <div class="smenu-setting-row">
-              <div class="smenu-setting-left">
-                <div class="smenu-setting-icon">💵</div>
-                <div>
-                  <div class="smenu-setting-label">Наличные</div>
-                  <div class="smenu-setting-sub">Оплата при получении</div>
-                </div>
-              </div>
-              <label class="smenu-switch">
-                <input type="checkbox" v-model="paymentSettings.cash" @change="savePaymentSettings" />
-                <span class="smenu-slider"></span>
-              </label>
+            
+              
+              <MyTariffContent />
             </div>
-
-            <div class="smenu-setting-row">
-              <div class="smenu-setting-left">
-                <div class="smenu-setting-icon">💳</div>
-                <div>
-                  <div class="smenu-setting-label">Банковская карта</div>
-                  <div class="smenu-setting-sub">Терминал на месте</div>
-                </div>
-              </div>
-              <label class="smenu-switch">
-                <input type="checkbox" v-model="paymentSettings.card" @change="savePaymentSettings" />
-                <span class="smenu-slider"></span>
-              </label>
-            </div>
-
-            <div class="smenu-setting-row">
-              <div class="smenu-setting-left">
-                <div class="smenu-setting-icon">📱</div>
-                <div>
-                  <div class="smenu-setting-label">QR / СБП</div>
-                  <div class="smenu-setting-sub">Система быстрых платежей</div>
-                </div>
-              </div>
-              <label class="smenu-switch">
-                <input type="checkbox" v-model="paymentSettings.qr" @change="savePaymentSettings" />
-                <span class="smenu-slider"></span>
-              </label>
-            </div>
-          </div>
         </template>
 
         <!-- ══ PROFILE VIEW ══ -->

@@ -1,10 +1,9 @@
 const fs = require('fs');
-let code = fs.readFileSync('src/views/ClientView.vue', 'utf8');
+let code = fs.readFileSync('src/views/SuperAdminView.vue', 'utf8');
 
-code = code.replace(
-  "import { ref, computed, onMounted, onUnmounted, reactive } from 'vue';",
-  "import { ref, computed, onMounted, onUnmounted, reactive, watch } from 'vue';"
-);
+const doubleImport = `import { ref, computed, onMounted } from 'vue';
 
-fs.writeFileSync('src/views/ClientView.vue', code);
-console.log('Added watch to imports');
+const currentTab = ref('restaurants');`;
+
+code = code.replace(doubleImport, "const currentTab = ref('restaurants');");
+fs.writeFileSync('src/views/SuperAdminView.vue', code);

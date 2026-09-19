@@ -1,30 +1,22 @@
 const fs = require('fs');
-const path = 'src/api.ts';
-let code = fs.readFileSync(path, 'utf8');
 
-const bannersApi = `
-// ============================================================
-// BANNERS API
-// ============================================================
-export const bannersApi = {
-  getAll: (restaurantId: string) => request<{ banners: any[] }>(\`/api/banners/\${restaurantId}\`),
-  getActive: (restaurantId: string) => request<{ banners: any[] }>(\`/api/banners/active/\${restaurantId}\`, { skipAuth: true }),
-  create: (restaurantId: string, data: { imageUrl: string; targetItemId?: string; order?: number }) => 
-    request<{ banner: any }>(\`/api/banners/\${restaurantId}\`, {
-      method: 'POST',
-      body: JSON.stringify(data)
-    }),
-  update: (id: string, data: { isActive?: boolean; targetItemId?: string; order?: number }) =>
-    request<{ banner: any }>(\`/api/banners/\${id}\`, {
-      method: 'PATCH',
-      body: JSON.stringify(data)
-    }),
-  remove: (id: string) => request<{ success: boolean }>(\`/api/banners/\${id}\`, { method: 'DELETE' })
-};
+const apiPath = 'src/api.ts';
+let apiCode = fs.readFileSync(apiPath, 'utf8');
+
+if (!apiCode.includes('getTariffs')) {
+  const newApiFuncs = `
+  getTariffs: () => request<any[]>('/api/tariffs'),
+  updateTariff: (id: string, data: any) => request<any>(\`/api/tariffs/\${id}\`, { method: 'PUT', body: JSON.stringify(data) }),
+  createTariff: (data: any) => request<any>('/api/tariffs', { method: 'POST', body: JSON.stringify(data) }),
+  deleteTariff: (id: string) => request<any>(\`/api/tariffs/\${id}\`, { method: 'DELETE' }),
+  
+  getPaymentRequests: () => request<any[]>('/api/payment-requests'),
+  confirmPaymentRequest: (id: string) => request<any>(\`/api/payment-requests/\${id}/confirm\`, { method: 'PUT' }),
+  rejectPaymentRequest: (id: string) => request<any>(\`/api/payment-requests/\${id}/reject\`, { method: 'PUT' }),
+  updateRestaurantTariff: (id: string, tariffId: string, months: number) => request<any>(\`/api/superadmin/restaurants/\${id}/tariff\`, { method: 'PUT', body: JSON.stringify({ tariffId, months }) }),
 `;
 
-code += '\n' + bannersApi;
-
-fs.writeFileSync(path, code);
-console.log('bannersApi added to src/api.ts');
-
+  apiCode = apiCode.replace(/export const superAdminApi = \{/, 'export const superAdminApi = {' + newApiFuncs);
+  fs.writeFileSync(apiPath, apiCode);
+  console.log('Patched api.ts');
+}

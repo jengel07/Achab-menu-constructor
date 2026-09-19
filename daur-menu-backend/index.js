@@ -8,6 +8,9 @@ import jwt from 'jsonwebtoken';
 import { createWorker } from 'tesseract.js';
 import { parseMenuText } from './menuParser.js';
 import db from './db.js';
+import './bot.js';
+import { notifyPaymentApproved } from './bot.js';
+import cron from 'node-cron';
 import ordersRouter from './orders.js';
 
 import os from 'os';
@@ -571,12 +574,18 @@ app.post('/api/menu/:restaurantId', authMiddleware, adminOnly, async (req, res) 
         });
 
         if (cats && cats.length > 0) {
-          const formattedCats = cats.map((cat, index) => ({
-            id: cat.id,
-            name: cat.name || 'Без названия',
-            restaurantId: restaurantId,
-            orderIndex: index
-          }));
+          const seenCatIds = new Set();
+   const formattedCats = cats.map((cat, index) => {
+     let catId = cat.id;
+     if (!catId || seenCatIds.has(catId)) catId = require('crypto').randomUUID();
+     seenCatIds.add(catId);
+     return {
+       id: catId,
+       name: cat.name || 'Без названия',
+       restaurantId: restaurantId,
+       orderIndex: index
+     };
+   });
           await tx.category.createMany({
             data: formattedCats,
           });
@@ -807,12 +816,7 @@ app.get('/api/superadmin/stats', authMiddleware, superAdminOnly, async (req, res
 app.get('/api/superadmin/restaurants', authMiddleware, superAdminOnly, async (req, res) => {
   try {
     const restaurants = await db.restaurant.findMany({
-      select: {
-        id: true,
-        email: true,
-        name: true,
-        _count: { select: { staff: true, orders: true } },
-      },
+      select: { id: true, email: true, name: true, status: true, paidUntil: true, trialEndsAt: true, createdAt: true, _count: { select: { staff: true, orders: true } } },
       orderBy: { name: 'asc' },
     });
     res.json({ success: true, restaurants });
@@ -1014,9 +1018,19 @@ app.post('/api/call-waiter', async (req, res) => {
         }
         
         fetch(urlObj.toString(), { method: 'GET' })
-          .then(res => res.json())
-          .then(data => console.log('Telegram waiter call sent:', data.ok))
-          .catch(e => console.error('Telegram error:', e));
+            .then(res => res.json())
+            .then(data => {
+              if (!data.ok) {
+                 console.error('[WAITER TG] Failed:', JSON.stringify(data));
+                 if (data.parameters?.migrate_to_chat_id) {
+                   urlObj.searchParams.set('chat_id', data.parameters.migrate_to_chat_id);
+                   return fetch(urlObj.toString(), { method: 'GET' }).then(r => r.json());
+                 }
+              }
+              return data;
+            })
+            .then(data => console.log('[WAITER TG] Final:', data))
+            .catch(e => console.error('[WAITER TG] Error:', e));
       }
     }
 
@@ -1035,6 +1049,105 @@ app.post('/api/call-waiter', async (req, res) => {
   }
 });
 // ---------------------------
+
+
+// ============================================================
+// CRON TASKS
+// ============================================================
+cron.schedule('0 * * * *', async () => {
+  try {
+    console.log('[CRON] Проверка просроченных подписок...');
+    const now = new Date();
+    
+    // Блокируем тех, у кого закончилась оплата (не TRIAL, ACTIVE/PENDING_PAYMENT, и paidUntil < now)
+    const result = await db.restaurant.updateMany({
+      where: {
+        status: { in: ['ACTIVE', 'PENDING_PAYMENT'] },
+        paidUntil: { lt: now },
+        email: { not: SUPERADMIN_EMAIL }
+      },
+      data: { status: 'BLOCKED' }
+    });
+    
+    // Блокируем TRIAL, у которых trialEndsAt < now
+    const trialResult = await db.restaurant.updateMany({
+      where: {
+        status: 'TRIAL',
+        trialEndsAt: { lt: now },
+        email: { not: SUPERADMIN_EMAIL }
+      },
+      data: { status: 'BLOCKED' }
+    });
+
+    if (result.count > 0 || trialResult.count > 0) {
+      console.log(`[CRON] Заблокировано аккаунтов по истечению: ${result.count} (основные), ${trialResult.count} (триал)`);
+    }
+  } catch (err) {
+    console.error('[CRON] Ошибка при блокировке:', err.message);
+  }
+});
+
+
+// GET /api/my-restaurant-status
+app.get('/api/my-restaurant-status', authMiddleware, async (req, res) => {
+  try {
+    console.log('[BILLING] Fetching for user:', req.user);
+    const restaurant = await db.restaurant.findUnique({
+      where: { id: req.user.restaurantId },
+      select: { id: true, name: true, status: true, paidUntil: true, trialEndsAt: true, createdAt: true }
+    });
+    console.log('[BILLING] Result:', restaurant);
+    if (!restaurant) return res.status(404).json({ error: 'Ресторан не найден' });
+    res.json(restaurant);
+  } catch (err) {
+    console.error('[BILLING] Error:', err);
+    res.status(500).json({ error: err.message });
+  }
+});
+
+// POST /api/superadmin/restaurants/:id/toggle-block
+
+// POST /api/superadmin/restaurants/:id/confirm-payment
+app.post('/api/superadmin/restaurants/:id/confirm-payment', authMiddleware, superAdminOnly, async (req, res) => {
+  try {
+    const restaurant = await db.restaurant.findUnique({ where: { id: req.params.id } });
+    if (!restaurant) return res.status(404).json({ error: 'Ресторан не найден' });
+
+    // Оплата строго на 30 дней от текущего момента
+    const newPaidUntil = new Date();
+    newPaidUntil.setDate(newPaidUntil.getDate() + 30);
+
+    await db.restaurant.update({
+      where: { id: restaurant.id },
+      data: { status: 'ACTIVE', paidUntil: newPaidUntil }
+    });
+
+    if (restaurant.ownerTelegramId && typeof notifyPaymentApproved === 'function') {
+      notifyPaymentApproved(restaurant.ownerTelegramId);
+    }
+
+    res.json({ success: true, paidUntil: newPaidUntil });
+  } catch (err) {
+    res.status(500).json({ error: err.message });
+  }
+});
+
+app.post('/api/superadmin/restaurants/:id/toggle-block', authMiddleware, superAdminOnly, async (req, res) => {
+  try {
+    const { block } = req.body;
+    const restaurant = await db.restaurant.findUnique({ where: { id: req.params.id } });
+    if (!restaurant) return res.status(404).json({ error: 'Ресторан не найден' });
+    if (restaurant.email === SUPERADMIN_EMAIL) return res.status(403).json({ error: 'Себя блокировать нельзя' });
+    
+    await db.restaurant.update({
+      where: { id: restaurant.id },
+      data: { status: block ? 'BLOCKED' : 'ACTIVE' }
+    });
+    res.json({ success: true });
+  } catch (err) {
+    res.status(500).json({ error: err.message });
+  }
+});
 
 app.use(express.static(path.join(__dirname, 'public')));
 

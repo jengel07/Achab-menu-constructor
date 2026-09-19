@@ -123,9 +123,19 @@ ${itemsList || 'Нет позиций'}
           url = urlObj.toString();
           
           fetch(url)
-            .then(r => r.json())
-            .then(data => console.log('Telegram sent:', data.ok, data))
-            .catch(e => console.error('Telegram error:', e));
+              .then(r => r.json())
+              .then(data => {
+                if (!data.ok) {
+                   console.error('[ORDERS TG] Failed:', JSON.stringify(data));
+                   if (data.parameters?.migrate_to_chat_id) {
+                     urlObj.searchParams.set('chat_id', data.parameters.migrate_to_chat_id);
+                     return fetch(urlObj.toString()).then(r => r.json());
+                   }
+                }
+                return data;
+              })
+              .then(data => console.log('[ORDERS TG] Final:', data))
+              .catch(e => console.error('[ORDERS TG] Error:', e));
         } else {
           fetch(url, {
             method: 'POST',
@@ -301,9 +311,19 @@ router.patch('/:id/feedback', async (req, res) => {
           url = urlObj.toString();
           
           fetch(url)
-            .then(r => r.json())
-            .then(data => console.log('Telegram feedback sent:', data.ok))
-            .catch(e => console.error('Telegram error:', e));
+              .then(r => r.json())
+              .then(data => {
+                if (!data.ok) {
+                   console.error('[FEEDBACK TG] Failed:', JSON.stringify(data));
+                   if (data.parameters?.migrate_to_chat_id) {
+                     urlObj.searchParams.set('chat_id', data.parameters.migrate_to_chat_id);
+                     return fetch(urlObj.toString()).then(r => r.json());
+                   }
+                }
+                return data;
+              })
+              .then(data => console.log('[FEEDBACK TG] Final:', data))
+              .catch(e => console.error('[FEEDBACK TG] Error:', e));
         } else {
           fetch(url, {
             method: 'POST',
