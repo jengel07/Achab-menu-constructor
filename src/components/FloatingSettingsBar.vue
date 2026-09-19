@@ -102,7 +102,7 @@ const getContrastColor = (hex: string) => {
 };
 
 // Выбираем цвет фона для плашки (приоритет primaryColor, затем backgroundColor, либо дефолтный)
-const activeBgColor = computed(() => props.primaryColor || props.backgroundColor || '#646cff');
+const activeBgColor = computed(() => props.primaryColor || props.backgroundColor || '#9D0D0E');
 
 // Автоматически определяем цвет текста (черный или белый) в зависимости от фона
 const textColor = computed(() => getContrastColor(activeBgColor.value));

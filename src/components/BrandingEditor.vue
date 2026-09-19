@@ -129,7 +129,7 @@ const handleFileUpload = async (event: Event, type: 'cover' | 'avatar') => {
   transition: border-color 0.2s;
 }
 .restaurant-name-input:focus {
-  border-color: #646cff;
+  border-color: #9D0D0E;
 }
 
 .image-upload-container {
@@ -158,7 +158,7 @@ const handleFileUpload = async (event: Event, type: 'cover' | 'avatar') => {
 .checkbox-label input[type="checkbox"] {
   width: 16px;
   height: 16px;
-  accent-color: #646cff;
+  accent-color: #9D0D0E;
   cursor: pointer;
 }
 

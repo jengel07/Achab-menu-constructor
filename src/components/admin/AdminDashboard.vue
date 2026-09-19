@@ -82,7 +82,7 @@
           <button class="btn-burger" @click="isSidebarOpen = true" title="Открыть меню">
             ☰
           </button>
-          <div class="brand-logo">Daur Menu</div>
+          <img src="/achab-logo.jpg" class="brand-logo-img" alt="Achab Menu" />
         </div>
 
         <!-- Приветственный блок -->
@@ -840,7 +840,7 @@ const promptAddNewMenu = () => {
   width: 40px;
   height: 40px;
   border-radius: 50%;
-  background-color: #646cff;
+  background-color: #9D0D0E;
   color: white;
   display: flex;
   align-items: center;
@@ -896,7 +896,7 @@ const promptAddNewMenu = () => {
 }
 
 .nav-item.logout {
-  color: #646cff;
+  color: #9D0D0E;
 }
 
 .sidebar-overlay {
@@ -965,7 +965,7 @@ const promptAddNewMenu = () => {
 }
 
 .btn-refresh {
-  background-color: #646cff;
+  background-color: #9D0D0E;
   color: #fff;
   border: none;
   padding: 8px 18px;
@@ -1050,8 +1050,8 @@ const promptAddNewMenu = () => {
   font-size: 14px;
 }
 
-.op-icon.digital { background: rgba(255, 85, 0, 0.15); color: #646cff; }
-.op-icon.data { background: rgba(239, 68, 68, 0.15); color: #646cff; }
+.op-icon.digital { background: rgba(255, 85, 0, 0.15); color: #9D0D0E; }
+.op-icon.data { background: rgba(239, 68, 68, 0.15); color: #9D0D0E; }
 .op-icon.orders { background: rgba(34, 197, 94, 0.15); color: #22c55e; }
 
 /* MENU ITEMS */
@@ -1162,7 +1162,7 @@ const promptAddNewMenu = () => {
 
 .btn-new-menu {
   width: 100%;
-  background: #646cff;
+  background: #9D0D0E;
   color: #fff;
   border: none;
   padding: 12px;
@@ -1182,7 +1182,7 @@ const promptAddNewMenu = () => {
 }
 
 .total-views-text {
-  color: #646cff;
+  color: #9D0D0E;
   font-weight: 600;
   font-size: 14px;
 }
@@ -1250,7 +1250,7 @@ const promptAddNewMenu = () => {
   justify-content: center;
   font-weight: 700;
   font-size: 13px;
-  color: #646cff;
+  color: #9D0D0E;
 }
 
 .yumzi-dashboard.dark-theme .circle-inner {
@@ -1307,7 +1307,7 @@ const promptAddNewMenu = () => {
 }
 
 .btn-primary-orange {
-  background: #646cff;
+  background: #9D0D0E;
   color: #fff;
   border: none;
   padding: 10px 18px;
@@ -1319,7 +1319,7 @@ const promptAddNewMenu = () => {
 }
 
 .btn-primary-orange:hover {
-  background: #646cff;
+  background: #9D0D0E;
 }
 
 .staff-list {
@@ -1420,5 +1420,12 @@ const promptAddNewMenu = () => {
 
 .btn-remove-staff:hover {
   opacity: 1;
+}
+</style>
+<style scoped>
+.brand-logo-img {
+  height: 48px;
+  object-fit: contain;
+  margin-bottom: 24px;
 }
 </style>

@@ -104,13 +104,13 @@
                       <div class="card-content">
                         <div class="card-text-block">
                           <h3>{{ getLocalizedItemName(item.name) }}</h3>
-                          <span v-if="viewMode === 'list'" class="price" :style="{ color: currentRestaurantInfo.primaryColor || '#646cff', whiteSpace: 'nowrap' }">
+                          <span v-if="viewMode === 'list'" class="price" :style="{ color: currentRestaurantInfo.primaryColor || '#9D0D0E', whiteSpace: 'nowrap' }">
                             <template v-if="!item.priceBottle && !item.priceGlass">{{ Number(item.price || 0).toFixed(2) }} ₽</template>
                             <template v-else>{{ [item.priceGlass, item.priceBottle].filter(p => p).join(' / ') }} ₽</template>
                           </span>
                         </div>
                         <div class="card-bottom-row" style="flex-direction: column; gap: 8px;">
-                          <span v-if="viewMode === 'grid' || viewMode === 'full'" class="price" :style="{ color: currentRestaurantInfo.primaryColor || '#646cff', fontSize: '14px', fontWeight: 'bold', whiteSpace: 'nowrap' }">
+                          <span v-if="viewMode === 'grid' || viewMode === 'full'" class="price" :style="{ color: currentRestaurantInfo.primaryColor || '#9D0D0E', fontSize: '14px', fontWeight: 'bold', whiteSpace: 'nowrap' }">
                             <template v-if="!item.priceBottle && !item.priceGlass">
                               {{ Number(item.price || 0).toFixed(2) }} ₽
                             </template>
@@ -120,12 +120,12 @@
                           </span>
                           
                           <div v-if="!item.priceBottle && !item.priceGlass">
-                            <div v-if="getItemQuantity(item.id) > 0" class="counter-controls" :style="{ borderColor: currentRestaurantInfo.primaryColor || '#646cff' }">
+                            <div v-if="getItemQuantity(item.id) > 0" class="counter-controls" :style="{ borderColor: currentRestaurantInfo.primaryColor || '#9D0D0E' }">
                               <button class="counter-btn" @click="decreaseQuantity(item.id)">-</button>
                               <span class="counter-value">{{ getItemQuantity(item.id) }}</span>
                               <button class="counter-btn" @click="increaseQuantity(item.id)">+</button>
                             </div>
-                            <button v-else class="add-to-cart-btn" :style="{ backgroundColor: currentRestaurantInfo.primaryColor || '#646cff', width: '100%', padding: '6px 12px' }" @click="item.modifiers && item.modifiers.length > 0 ? modifierItem = item : addToCart(item)">+ {{ item.modifiers && item.modifiers.length > 0 ? tDyn('опции') : tDyn('добавить') }}</button>
+                            <button v-else class="add-to-cart-btn" :style="{ backgroundColor: currentRestaurantInfo.primaryColor || '#9D0D0E', width: '100%', padding: '6px 12px' }" @click="item.modifiers && item.modifiers.length > 0 ? modifierItem = item : addToCart(item)">+ {{ item.modifiers && item.modifiers.length > 0 ? tDyn('опции') : tDyn('добавить') }}</button>
                           </div>
                         </div>
                       </div>
@@ -271,13 +271,13 @@
                   <div class="card-content">
                     <div class="card-text-block">
                       <h3>{{ getLocalizedItemName(item.name) }}</h3>
-                      <span v-if="viewMode === 'list'" class="price" :style="{ color: currentRestaurantInfo.primaryColor || '#646cff', whiteSpace: 'nowrap' }">
+                      <span v-if="viewMode === 'list'" class="price" :style="{ color: currentRestaurantInfo.primaryColor || '#9D0D0E', whiteSpace: 'nowrap' }">
                         <template v-if="!item.priceBottle && !item.priceGlass">{{ Number(item.price || 0).toFixed(2) }} ₽</template>
                         <template v-else>{{ [item.priceGlass, item.priceBottle].filter(p => p).join(' / ') }} ₽</template>
                       </span>
                     </div>
                     <div class="card-bottom-row" style="flex-direction: column; gap: 8px;">
-                      <span v-if="viewMode === 'grid'" class="price" :style="{ color: currentRestaurantInfo.primaryColor || '#646cff', fontSize: '14px', fontWeight: 'bold', whiteSpace: 'nowrap' }">
+                      <span v-if="viewMode === 'grid'" class="price" :style="{ color: currentRestaurantInfo.primaryColor || '#9D0D0E', fontSize: '14px', fontWeight: 'bold', whiteSpace: 'nowrap' }">
                         <template v-if="!item.priceBottle && !item.priceGlass">
                           {{ Number(item.price || 0).toFixed(2) }} ₽
                         </template>
@@ -287,12 +287,12 @@
                       </span>
                       
                       <div v-if="!item.priceBottle && !item.priceGlass">
-                        <div v-if="getItemQuantity(item.id) > 0" class="counter-controls" :style="{ borderColor: currentRestaurantInfo.primaryColor || '#646cff' }">
+                        <div v-if="getItemQuantity(item.id) > 0" class="counter-controls" :style="{ borderColor: currentRestaurantInfo.primaryColor || '#9D0D0E' }">
                           <button class="counter-btn" @click="decreaseQuantity(item.id)">-</button>
                           <span class="counter-value">{{ getItemQuantity(item.id) }}</span>
                           <button class="counter-btn" @click="increaseQuantity(item.id)">+</button>
                         </div>
-                        <button v-else class="add-to-cart-btn" :style="{ backgroundColor: currentRestaurantInfo.primaryColor || '#646cff', width: '100%', padding: '6px 12px' }" @click="item.modifiers && item.modifiers.length > 0 ? modifierItem = item : addToCart(item)">+ {{ item.modifiers && item.modifiers.length > 0 ? tDyn('опции') : tDyn('добавить') }}</button>
+                        <button v-else class="add-to-cart-btn" :style="{ backgroundColor: currentRestaurantInfo.primaryColor || '#9D0D0E', width: '100%', padding: '6px 12px' }" @click="item.modifiers && item.modifiers.length > 0 ? modifierItem = item : addToCart(item)">+ {{ item.modifiers && item.modifiers.length > 0 ? tDyn('опции') : tDyn('добавить') }}</button>
                       </div>
                     </div>
                   </div>

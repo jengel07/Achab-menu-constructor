@@ -71,5 +71,5 @@ input[type="text"] {
   width: 100%; padding: 12px; background: var(--input-bg, #d7d7d761); border: 1px solid var(--border-color, #333); 
   border-radius: 8px; color: var(--text-main); box-sizing: border-box; 
 }
-input[type="text"]:focus { border-color: #646cff; outline: none; }
+input[type="text"]:focus { border-color: #9D0D0E; outline: none; }
 </style>

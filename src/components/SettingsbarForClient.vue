@@ -1,7 +1,7 @@
 <template>
   <div>
     <!-- Нижняя панель настроек -->
-    <div class="floating-settings-bar" :style="{ backgroundColor: primaryColor || secondaryColor || '#646cff' }">
+    <div class="floating-settings-bar" :style="{ backgroundColor: primaryColor || secondaryColor || '#9D0D0E' }">
       <button class="fs-icon-btn" @click="$emit('open', 'language')" title="Выбор языка">
         <Languages :size="20" stroke-width="2"/>
       </button>
@@ -52,7 +52,7 @@
           <span>{{ tDyn('Итого:') }}</span>
           <span>{{ totalPrice.toFixed(2) }} ₽</span>
         </div>
-        <button class="show-results-btn" :style="{ backgroundColor: primaryColor || '#646cff', color: '#fff' }" @click="$emit('checkout')">{{ tDyn('Оформить заказ') }}</button>
+        <button class="show-results-btn" :style="{ backgroundColor: primaryColor || '#9D0D0E', color: '#fff' }" @click="$emit('checkout')">{{ tDyn('Оформить заказ') }}</button>
       </div>
     </div>
 
@@ -75,34 +75,27 @@
           <h3>{{ tDyn('Фильтры') }}</h3>
           <button class="clear-filters-text-btn" @click="$emit('clear-filters')">{{ tDyn('Очистить') }}</button>
         </div>
+        
         <div style="font-size: 11px; font-weight: bold; margin-top: 4px;">{{ tDyn('Пищевая ценность') }}</div>
         <div style="display: flex; flex-direction: column; gap: 6px; margin-top: 4px;">
-          <button 
-            class="filter-option-btn" 
-            :class="{ active: selectedFilters.includes('nutFree') }"
-            :style="selectedFilters.includes('nutFree') ? { borderColor: primaryColor, backgroundColor: primaryColor, color: '#fff' } : {}"
-            @click="$emit('toggle-filter', 'nutFree')"
-          >
-            🌰 {{ tDyn('Без орехов') }}
-          </button>
-          <button 
-            class="filter-option-btn" 
-            :class="{ active: selectedFilters.includes('lactoseFree') }"
-            :style="selectedFilters.includes('lactoseFree') ? { borderColor: primaryColor, backgroundColor: primaryColor, color: '#fff' } : {}"
-            @click="$emit('toggle-filter', 'lactoseFree')"
-          >
-            🥛 {{ tDyn('Без лактозы') }}
-          </button>
-          <button 
-            class="filter-option-btn" 
-            :class="{ active: selectedFilters.includes('glutenFree') }"
-            :style="selectedFilters.includes('glutenFree') ? { borderColor: primaryColor, backgroundColor: primaryColor, color: '#fff' } : {}"
-            @click="$emit('toggle-filter', 'glutenFree')"
-          >
-            🌾 {{ tDyn('Без глютена') }}
-          </button>
+          <template v-for="f in [
+            { key: 'nutFree', icon: '🥜', label: 'Без орехов' },
+            { key: 'glutenFree', icon: '🌾', label: 'Без глютена' },
+            { key: 'vegetarian', icon: '🥗', label: 'Вегетарианское' },
+            { key: 'vegan', icon: '🌱', label: 'Веганское' }
+          ]" :key="f.key">
+            <button 
+              v-if="!restaurantInfo?.filterSettings || restaurantInfo.filterSettings[f.key] !== false"
+              class="filter-option-btn" 
+              :class="{ active: selectedFilters.includes(f.key) }"
+              :style="selectedFilters.includes(f.key) ? { borderColor: primaryColor, backgroundColor: primaryColor, color: '#fff' } : {}"
+              @click="$emit('toggle-filter', f.key)"
+            >
+              {{ f.icon }} {{ tDyn(f.label) }}
+            </button>
+          </template>
         </div>
-        <button class="show-results-btn" :style="{ backgroundColor: primaryColor || '#646cff', color: '#fff', marginTop: '8px' }" @click="$emit('close')">{{ tDyn('Показать результаты') }}</button>
+<button class="show-results-btn" :style="{ backgroundColor: primaryColor || '#9D0D0E', color: '#fff', marginTop: '8px' }" @click="$emit('close')">{{ tDyn('Показать результаты') }}</button>
         <div class="modal-footer-text">© Проект от Web-Visual-World | 2024</div>
       </div>
     </div>
@@ -167,10 +160,10 @@
         </div>
 
         <!-- Мини-макет сторис прямо в окне -->
-        <div class="story-mockup-container" :style="{ borderColor: primaryColor || '#646cff' }">
+        <div class="story-mockup-container" :style="{ borderColor: primaryColor || '#9D0D0E' }">
           <div class="story-mockup-content">
             <span class="story-mockup-tag">МЕНЮ РЕСТОРАНА</span>
-            <span class="story-mockup-title" :style="{ color: primaryColor || '#646cff' }">
+            <span class="story-mockup-title" :style="{ color: primaryColor || '#9D0D0E' }">
               {{ restaurantInfo.name || 'Jazzve' }}
             </span>
             <span class="story-mockup-hint">Переходите по ссылке в профиле или сканируйте</span>
@@ -184,7 +177,7 @@
         </p>
 
         <!-- Кнопка скачивания -->
-        <button class="show-results-btn" :style="{ backgroundColor: primaryColor || '#646cff', color: '#fff' }" @click="downloadStoryImage">
+        <button class="show-results-btn" :style="{ backgroundColor: primaryColor || '#9D0D0E', color: '#fff' }" @click="downloadStoryImage">
           📥 Скачать картинку для Instagram
         </button>
       </div>
@@ -202,7 +195,7 @@
           placeholder="Введите название блюда..." 
           class="search-input"
         />
-        <button class="show-results-btn" :style="{ backgroundColor: primaryColor || '#646cff', color: '#fff', marginTop: '8px' }" @click="$emit('close')">Найти</button>
+        <button class="show-results-btn" :style="{ backgroundColor: primaryColor || '#9D0D0E', color: '#fff', marginTop: '8px' }" @click="$emit('close')">Найти</button>
       </div>
     </div>
 
@@ -290,7 +283,7 @@ const downloadStoryImage = () => {
   ctx.textAlign = 'center';
   ctx.fillText('МЕНЮ РЕСТОРАНА', 540, 700);
 
-  ctx.fillStyle = props.primaryColor || '#646cff';
+  ctx.fillStyle = props.primaryColor || '#9D0D0E';
   ctx.font = 'bold 84px sans-serif';
   ctx.fillText(props.restaurantInfo.name || 'Jazzve', 540, 820);
 
@@ -424,7 +417,7 @@ const shareTo = (platform: string) => {
 .sheet-header-flex h3, .bottom-sheet h3 {
   font-size: 13px;
   margin: 0;
-  color: #646cff;
+  color: #9D0D0E;
 }
 .clear-filters-text-btn {
   background: transparent;

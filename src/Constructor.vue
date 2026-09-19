@@ -548,7 +548,7 @@ const updateRestaurantInfo = (newData: typeof menuStore.restaurantInfo) => {
               style="width: 32px; height: 32px; padding: 0; display: flex; align-items: center; justify-content: center;">
               <MenuIcon :size="18" stroke-width="2" />
             </button>
-            <h2 class="brand-title" style="margin: 0;">Achab</h2>
+            <img :src="isLightTheme ? '/logo-light.png' : '/logo-dark.png'" alt="Achab" style="height: 32px; object-fit: contain; margin: 0;" />
           </div>
 
           <div class="header-actions-row">
@@ -581,7 +581,7 @@ const updateRestaurantInfo = (newData: typeof menuStore.restaurantInfo) => {
             <Save :size="14" stroke-width="2" /> Сохранить меню
           </button>
           <button @click="triggerFileUpload" class="btn-upload-file"
-            style="display: flex; align-items: center; justify-content: center; gap: 6px; width: 100%; padding: 10px; background-color: #3b82f6; color: white; border: none; border-radius: 8px; cursor: pointer; font-weight: 500; font-size: 13px;">
+            style="display: flex; align-items: center; justify-content: center; gap: 6px; width: 100%; padding: 10px; background-color: var(--accent); color: white; border: none; border-radius: 8px; cursor: pointer; font-weight: 500; font-size: 13px;">
             <Upload :size="14" stroke-width="2" /> Загрузить блюда (Excel/JSON)
           </button>
           <button @click="resetImport" class="btn-reset-sidebar"
@@ -634,7 +634,10 @@ const updateRestaurantInfo = (newData: typeof menuStore.restaurantInfo) => {
           <button v-if="sidebarView !== 'main'" class="smenu-back-btn" @click="sidebarView = 'main'">
             <ArrowLeft :size="16" /> Назад
           </button>
-          <span class="smenu-header-title">{{ sidebarTitle }}</span>
+          <span class="smenu-header-title">
+            <img v-if="sidebarView === 'main'" :src="isLightTheme ? '/logo-light.png' : '/logo-dark.png'" alt="Achab" style="height: 24px; object-fit: contain; margin: 0;" />
+            <template v-else>{{ sidebarTitle }}</template>
+          </span>
           <button class="smenu-close-btn" @click="closeSidebar">
             <X :size="18" />
           </button>

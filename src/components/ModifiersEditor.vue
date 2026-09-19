@@ -227,7 +227,7 @@ const save = () => {
 .add-opt-btn {
   background: none;
   border: 1px dashed #cbd5e1;
-  color: #3b82f6;
+  color: #9D0D0E;
   padding: 6px;
   border-radius: 4px;
   cursor: pointer;

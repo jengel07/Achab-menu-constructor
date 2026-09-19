@@ -12,7 +12,7 @@
   --text-main: #ffffff;
   --text-color: #ffffff;
   --text-muted: #888888;
-  --accent: #646cff;
+  --accent: #9D0D0E;
   --editor-bg: #141414;
   --badge-bg: rgba(255, 255, 255, 0.05);
   --badge-color: #a0a0a0;
@@ -33,7 +33,7 @@
   --text-main: #1e293b;
   --text-color: #1d1d1f;
   --text-muted: #6e6e73;
-  --accent: #646cff;
+  --accent: #9D0D0E;
   --editor-bg: #f8fafc;
   --badge-bg: rgba(0, 0, 0, 0.05);
   --badge-color: #515154;
@@ -104,7 +104,7 @@ body {
 
 .status-badge {
   font-size: 11px;
-  background: rgba(100, 108, 255, 0.15);
+  background: rgba(157, 13, 14, 0.15);
   color: var(--accent);
   padding: 4px 8px;
   border-radius: 6px;

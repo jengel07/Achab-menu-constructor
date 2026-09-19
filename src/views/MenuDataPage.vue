@@ -1110,7 +1110,7 @@ const triggerBrowserPrint = () => { window.print(); };
 }
 
 .btn-refresh-top {
-  background: #646cff;
+  background: #9D0D0E;
   color: white;
   border: none;
   padding: 6px 14px;

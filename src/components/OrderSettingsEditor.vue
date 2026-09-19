@@ -130,7 +130,7 @@
                 <button class="btn-restore-order" @click="changeStatus(order.id, 'new')">↺ Вернуть</button>
               </template>
               <template v-else-if="order.status === 'done'">
-                  <button class="btn-done-order" style="background: #4f46e5;" @click="changeStatus(order.id, 'archived')">🔒 Закрыть чек</button>
+                  <button class="btn-done-order" style="background: #521926;" @click="changeStatus(order.id, 'archived')">🔒 Закрыть чек</button>
                 </template>
               </div>
           </div>
@@ -298,6 +298,23 @@
                       class="text-input" style="padding-left: 10px;" @blur="saveSettings" />
                   </div>
                   <p style="font-size: 10px; color: #888; margin-top: 4px;">Скопируйте URL с chat_id. Мы автоматически добавим к нему &text=...</p>
+                    <label class="mt-8">ID темы заказов (message_thread_id)</label>
+                    <div class="phone-input-wrapper">
+                      <input type="text" v-model="ordersThreadId" placeholder="Например: 12345" class="text-input" style="padding-left: 10px;" @blur="saveSettings" />
+                    </div>
+
+                    <label class="mt-8">ID темы официантов (message_thread_id)</label>
+                    <div class="phone-input-wrapper">
+                      <input type="text" v-model="waitersThreadId" placeholder="Например: 12346" class="text-input" style="padding-left: 10px;" @blur="saveSettings" />
+                    </div>
+
+                    <label class="mt-8">ID темы отзывов (message_thread_id)</label>
+                    <div class="phone-input-wrapper">
+                      <input type="text" v-model="reviewsThreadId" placeholder="Например: 12347" class="text-input" style="padding-left: 10px;" @blur="saveSettings" />
+                    </div>
+                    
+                    <p style="font-size: 10px; color: #888; margin-top: 6px;">Укажите ID веток, куда будут приходить соответствующие уведомления. Если не указывать, сообщения придут в общий чат.</p>
+
                 </div>
                 <div class="setting-row-switch mt-16">
                   <div class="notif-text-desc"><span>Уведомлять по email</span>
@@ -609,6 +626,9 @@ const freeFrom = ref(_saved.freeFrom ?? 0);
 const onsiteActive = ref(_saved.onsiteActive ?? true);
 const notifType = ref(_saved.notifType ?? 'dashboard');
 const telegramWebhook = ref(_saved.telegramWebhook ?? _saved.whatsappNumber ?? '');
+  const ordersThreadId = ref(_saved.ordersThreadId ?? '');
+  const waitersThreadId = ref(_saved.waitersThreadId ?? '');
+  const reviewsThreadId = ref(_saved.reviewsThreadId ?? '');
 const emailNotif = ref(_saved.emailNotif ?? false);
 const emailAddress = ref(_saved.emailAddress ?? '');
 
@@ -652,6 +672,9 @@ const saveSettings = () => {
     onsiteActive: onsiteActive.value,
     notifType: notifType.value,
     telegramWebhook: telegramWebhook.value,
+      ordersThreadId: ordersThreadId.value,
+      waitersThreadId: waitersThreadId.value,
+      reviewsThreadId: reviewsThreadId.value,
     emailNotif: emailNotif.value,
     emailAddress: emailAddress.value,
     workDays: workDays.value,
@@ -715,7 +738,7 @@ const manualSave = () => {
 .counter-badge.active { background: #2d2d2d; color: #fff; border-color: #555; }
 .dot { width: 8px; height: 8px; border-radius: 50%; flex-shrink: 0; }
 .counter-badge.new .dot { background: #f97316; }
-.counter-badge.progress .dot { background: #3b82f6; }
+.counter-badge.progress .dot { background: #9D0D0E; }
 .counter-badge.done .dot { background: #10b981; }
 .counter-badge.cancelled .dot { background: #ef4444; }
 .count-num {
@@ -738,7 +761,7 @@ const manualSave = () => {
   border-radius: 20px;
   letter-spacing: 0.3px;
 }
-.hub-mode-pill.menu { background: rgba(99,102,241,0.15); color: #a5b4fc; border: 1px solid rgba(99,102,241,0.3); }
+.hub-mode-pill.menu { background: rgba(106, 33, 49,0.15); color: #a5b4fc; border: 1px solid rgba(106, 33, 49,0.3); }
 .hub-mode-pill.cart { background: rgba(245,158,11,0.15); color: #fbbf24; border: 1px solid rgba(245,158,11,0.3); }
 .hub-mode-pill.order { background: rgba(16,185,129,0.15); color: #34d399; border: 1px solid rgba(16,185,129,0.3); }
 
@@ -780,7 +803,7 @@ const manualSave = () => {
 .hub-spinner {
   width: 24px; height: 24px;
   border: 3px solid rgba(255,255,255,0.1);
-  border-top-color: #6366f1;
+  border-top-color: #9D0D0E;
   border-radius: 50%;
   animation: spin 0.8s linear infinite;
 }
@@ -921,7 +944,7 @@ const manualSave = () => {
   font-weight: 700;
 }
 .btn-set-mode {
-  background: #6366f1;
+  background: #9D0D0E;
   color: #fff;
   border: none;
   padding: 9px 20px;
@@ -931,7 +954,7 @@ const manualSave = () => {
   cursor: pointer;
   transition: background 0.15s;
 }
-.btn-set-mode:hover { background: #4f46e5; }
+.btn-set-mode:hover { background: #521926; }
 
 /* Warning card */
 .warning-card { text-align: left; }
@@ -942,9 +965,9 @@ const manualSave = () => {
 /* Modal footer */
 .modal-footer-actions { display: flex; gap: 10px; justify-content: flex-end; margin-top: 16px; }
 .btn-cancel { background: #374151; color: #9ca3af; border: none; padding: 10px 20px; border-radius: 8px; cursor: pointer; font-size: 14px; }
-.btn-activate { background: #6366f1; color: #fff; border: none; padding: 10px 20px; border-radius: 8px; cursor: pointer; font-size: 14px; font-weight: 700; transition: background 0.15s; }
+.btn-activate { background: #9D0D0E; color: #fff; border: none; padding: 10px 20px; border-radius: 8px; cursor: pointer; font-size: 14px; font-weight: 700; transition: background 0.15s; }
 .btn-activate:disabled { opacity: 0.4; cursor: not-allowed; }
-.btn-activate:not(:disabled):hover { background: #4f46e5; }
+.btn-activate:not(:disabled):hover { background: #521926; }
 .btn-deactivate { background: rgba(239,68,68,0.1); color: #ef4444; border: 1px solid rgba(239,68,68,0.2); padding: 10px; border-radius: 8px; cursor: pointer; font-size: 13px; width: 100%; margin-top: 8px; transition: background 0.15s; }
 .btn-deactivate:hover { background: rgba(239,68,68,0.2); }
 
@@ -961,7 +984,7 @@ const manualSave = () => {
 .highlight-orange { color: #f97316; font-weight: 700; }
 .range-input { width: 100%; accent-color: #f97316; }
 .text-input { padding: 8px 12px; border: 1px solid #3f3f46; border-radius: 8px; font-size: 14px; outline: none; width: 100%; background: #27272a; color: #f3f4f6; transition: border-color 0.2s; box-sizing: border-box; }
-.text-input:focus { border-color: #6366f1; }
+.text-input:focus { border-color: #9D0D0E; }
 .input-with-unit { display: flex; align-items: center; border: 1px solid #3f3f46; border-radius: 8px; background: #27272a; overflow: hidden; }
 .input-with-unit span { padding: 0 10px; font-size: 12px; color: #6b7280; background: #323238; height: 100%; display: flex; align-items: center; flex-shrink: 0; }
 .input-with-unit input { border: none; background: transparent; color: #f3f4f6; width: 100%; padding: 8px; outline: none; }

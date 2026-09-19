@@ -105,6 +105,11 @@
                 </div>
               </div>
 
+              
+              <div v-if="order.status === 'done' || order.status === 'archived'" class="k-timing-info">
+                <div class="k-timing-text">Время заказа: {{ formatTime(order.createdAt) }} • Завершен: {{ formatTime(order.updatedAt) }}</div>
+                <div class="k-timing-badge">⏱️ Выполнен за {{ getDiffMins(order.createdAt, order.updatedAt) }} мин</div>
+              </div>
               <!-- Order items -->
               <div class="k-card-items">
                 <div v-for="item in order.items" :key="item.id" class="k-item-row">
@@ -168,7 +173,12 @@
             </div>
           </div>
 
-          <!-- Items -->
+          
+            <div v-if="order.status === 'done' || order.status === 'archived'" class="k-timing-info">
+              <div class="k-timing-text">Время заказа: {{ formatTime(order.createdAt) }} • Завершен: {{ formatTime(order.updatedAt) }}</div>
+              <div class="k-timing-badge">⏱️ Выполнен за {{ getDiffMins(order.createdAt, order.updatedAt) }} мин</div>
+            </div>
+            <!-- Items -->
           <div class="k-card-items">
             <div v-for="item in order.items" :key="item.id" class="k-item-row">
               <span><b>{{ item.quantity }}×</b> {{ item.name }}</span>
@@ -307,6 +317,19 @@ function typeLabel(type: string) {
   if (type === 'delivery') return '🚴 Доставка'
   if (type === 'pickup')   return '📦 Самовывоз'
   return '🍽 Зал'
+}
+
+
+function formatTime(dateString: string) {
+  if (!dateString) return '';
+  return new Date(dateString).toLocaleTimeString('ru-RU', { hour: '2-digit', minute: '2-digit' });
+}
+
+function getDiffMins(start: string, end: string) {
+  if (!start || !end) return 0;
+  const s = new Date(start).getTime();
+  const e = new Date(end).getTime();
+  return Math.round((e - s) / 60000);
 }
 
 function elapsed(order: any) {
@@ -512,7 +535,7 @@ onUnmounted(() => {
   border-radius: 12px; padding: 2px 6px; font-size: 11px;
 }
 .k-tab.new.active { border-color: #f59e0b; color: #f59e0b; background: rgba(245,158,11,.12); }
-.k-tab.progress.active { border-color: #3b82f6; color: #3b82f6; background: rgba(59,130,246,.12); }
+.k-tab.progress.active { border-color: #9D0D0E; color: #9D0D0E; background: rgba(59,130,246,.12); }
 .k-tab.done.active { border-color: #22c55e; color: #22c55e; background: rgba(34,197,94,.12); }
 .k-tab.cancelled.active { border-color: #ef4444; color: #ef4444; background: rgba(239,68,68,.12); }
 
@@ -585,7 +608,7 @@ onUnmounted(() => {
 }
 .light-theme .k-card { background: #fff; border-color: #e2e5f0; }
 .k-card.new       { border-color: #f59e0b44; }
-.k-card.progress  { border-color: #3b82f644; }
+.k-card.progress  { border-color: #9D0D0E44; }
 .k-card.done      { border-color: #22c55e44; }
 .k-card.cancelled { border-color: #ef444444; opacity: 0.75; }
 .k-card-head { display: flex; justify-content: space-between; align-items: center; }
@@ -655,4 +678,37 @@ onUnmounted(() => {
   
   .k-card-total { display: flex; justify-content: space-between; border-top: 1px solid #2d3148; margin-top: 12px; padding-top: 12px; font-size: 14px; }
   .light-theme .k-card-total { border-color: #e5e7eb; }
+
+.k-timing-info {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  margin-top: 6px;
+  margin-bottom: 4px;
+}
+.k-timing-text {
+  font-size: 12px;
+  color: #d1d5db;
+}
+.light-theme .k-timing-text {
+  color: #374151;
+}
+.k-timing-badge {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  background: rgba(34, 197, 94, 0.15);
+  color: #4ade80;
+  padding: 6px 10px;
+  border-radius: 8px;
+  font-size: 13px;
+  font-weight: 600;
+  width: fit-content;
+}
+.light-theme .k-timing-badge {
+  background: #dcfce7;
+  color: #166534;
+}
+
 </style>
+

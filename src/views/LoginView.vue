@@ -2,7 +2,7 @@
   <div class="login-page">
     <!-- Логотип в левом верхнем углу -->
     <header class="login-header">
-      <div class="brand-logo">ConstructorMenu</div>
+      <img src="/logo-light.png" class="brand-logo-img" alt="Achab Menu" />
     </header>
 
     <!-- Основная карточка входа/регистрации -->
@@ -447,5 +447,11 @@ watch(() => route.query, checkAutoLogin, { immediate: true });
 
 .legal-footer a:hover {
   text-decoration: underline;
+}
+
+.brand-logo-img {
+  height: 48px;
+  object-fit: contain;
+  margin-bottom: 24px;
 }
 </style>

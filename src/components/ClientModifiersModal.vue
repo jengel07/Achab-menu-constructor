@@ -334,7 +334,7 @@ const addToCart = () => {
 }
 
 .option-row.selected {
-  border-color: #3b82f6;
+  border-color: #9D0D0E;
   background: #eff6ff;
 }
 
@@ -361,13 +361,13 @@ const addToCart = () => {
 }
 
 .option-row.selected .custom-radio {
-  border-color: #3b82f6;
+  border-color: #9D0D0E;
 }
 
 .radio-dot {
   width: 10px;
   height: 10px;
-  background: #3b82f6;
+  background: #9D0D0E;
   border-radius: 50%;
 }
 
@@ -384,8 +384,8 @@ const addToCart = () => {
 }
 
 .option-row.selected .custom-checkbox {
-  background: #3b82f6;
-  border-color: #3b82f6;
+  background: #9D0D0E;
+  border-color: #9D0D0E;
 }
 
 .opt-name {
@@ -402,7 +402,7 @@ const addToCart = () => {
 }
 
 .option-row.selected .opt-price {
-  color: #3b82f6;
+  color: #9D0D0E;
 }
 
 .modal-footer {

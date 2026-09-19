@@ -178,7 +178,7 @@ const deleteBanner = async (id: string) => {
 .smenu-btn-primary {
   display: flex;
   align-items: center;
-  background: #6366f1;
+  background: #9D0D0E;
   color: white;
   border: none;
   border-radius: 8px;

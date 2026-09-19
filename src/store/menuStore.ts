@@ -6,7 +6,7 @@ import { menuApi, getToken, removeToken } from '../api';
 export const useMenuStore = defineStore('menu', () => {
   const restaurantInfo = ref<RestaurantInfo>({
     name: 'Ресторан',
-    primaryColor: '#646cff',
+    primaryColor: '#9D0D0E',
     secondaryColor: '#333',
     backgroundColor: '#1a1a1a',
     textColor: '#ffffff',

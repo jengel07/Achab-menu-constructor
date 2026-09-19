@@ -68,7 +68,7 @@
             <button  
               class="phone-cat-badge"  
               :class="{ active: selectedCategory === 'all' }"
-              :style="selectedCategory === 'all' ? { backgroundColor: restaurantInfo.primaryColor || '#646cff', color: '#fff' } : {}"
+              :style="selectedCategory === 'all' ? { backgroundColor: restaurantInfo.primaryColor || '#9D0D0E', color: '#fff' } : {}"
               @click="selectedCategory = 'all'"
             >
               {{ t('allCategories') }}
@@ -78,7 +78,7 @@
               :key="cat.id || cat.name"
               class="phone-cat-badge"
               :class="{ active: selectedCategory === (cat.id || cat.name) }"
-              :style="selectedCategory === (cat.id || cat.name) ? { backgroundColor: restaurantInfo.primaryColor || '#646cff', color: '#fff' } : {}"
+              :style="selectedCategory === (cat.id || cat.name) ? { backgroundColor: restaurantInfo.primaryColor || '#9D0D0E', color: '#fff' } : {}"
               @click="selectedCategory = (cat.id || cat.name)"
             >
               {{ getLocalizedCategoryName(cat) }}
@@ -94,14 +94,14 @@
               <div class="card-content">
                 <div class="card-text-block">
                   <h3>{{ getItemName(item) }}</h3>
-                  <span v-if="viewMode === 'list'" class="price" :style="{ color: restaurantInfo.primaryColor || '#646cff', whiteSpace: 'nowrap' }">
+                  <span v-if="viewMode === 'list'" class="price" :style="{ color: restaurantInfo.primaryColor || '#9D0D0E', whiteSpace: 'nowrap' }">
                     <template v-if="!item.priceBottle && !item.priceGlass">{{ Number(item.price || 0).toFixed(2) }} ₽</template>
                     <template v-else>{{ [item.priceGlass, item.priceBottle].filter(p => p).join(' / ') }} ₽</template>
                   </span>
                   <p v-if="(viewMode === 'grid' || viewMode === 'full') && getItemDescription(item)">{{ getItemDescription(item) }}</p>
                 </div>
                 <div class="card-bottom-row" style="flex-direction: column; gap: 8px;">
-                  <span v-if="viewMode === 'grid' || viewMode === 'full'" class="price" :style="{ color: restaurantInfo.primaryColor || '#646cff', fontSize: '14px', fontWeight: 'bold', whiteSpace: 'nowrap' }">
+                  <span v-if="viewMode === 'grid' || viewMode === 'full'" class="price" :style="{ color: restaurantInfo.primaryColor || '#9D0D0E', fontSize: '14px', fontWeight: 'bold', whiteSpace: 'nowrap' }">
                     <template v-if="!item.priceBottle && !item.priceGlass">
                       {{ Number(item.price || 0).toFixed(2) }} ₽
                     </template>
@@ -113,16 +113,16 @@
                   <div v-else></div>
 
                   <div v-if="!item.priceBottle && !item.priceGlass">
-                    <div v-if="getItemQuantity(item.id) > 0" class="counter-controls" :style="{ borderColor: restaurantInfo.primaryColor || '#646cff' }">
+                    <div v-if="getItemQuantity(item.id) > 0" class="counter-controls" :style="{ borderColor: restaurantInfo.primaryColor || '#9D0D0E' }">
                       <button class="counter-btn" @click="decreaseQuantity(item.id)">-</button>
                       <span class="counter-value">{{ getItemQuantity(item.id) }}</span>
                       <button class="counter-btn" @click="increaseQuantity(item.id)">+</button>
                     </div>
-                    <button v-else class="add-to-cart-btn" :style="{ backgroundColor: restaurantInfo.primaryColor || '#646cff', width: '100%', padding: '6px 12px' }" @click="item.modifiers && item.modifiers.length > 0 ? modifierItem = item : addToCart(item)">+ {{ item.modifiers && item.modifiers.length > 0 ? tDyn('опции') : tDyn('добавить') }}</button>
+                    <button v-else class="add-to-cart-btn" :style="{ backgroundColor: restaurantInfo.primaryColor || '#9D0D0E', width: '100%', padding: '6px 12px' }" @click="item.modifiers && item.modifiers.length > 0 ? modifierItem = item : addToCart(item)">+ {{ item.modifiers && item.modifiers.length > 0 ? tDyn('опции') : tDyn('добавить') }}</button>
                   </div>
 
                   <div v-else>
-                    <button class="add-to-cart-btn" :style="{ backgroundColor: restaurantInfo.primaryColor || '#646cff', width: '100%', padding: '6px 12px' }" @click="openVariantModal(item)">
+                    <button class="add-to-cart-btn" :style="{ backgroundColor: restaurantInfo.primaryColor || '#9D0D0E', width: '100%', padding: '6px 12px' }" @click="openVariantModal(item)">
                       + {{ tDyn('выбрать') }}
                     </button>
                   </div>
@@ -159,6 +159,22 @@
           @update:searchQuery="val => searchQuery = val"
         />
 
+<!-- WAITER CALL MODAL -->
+    <div v-if="showCallWaiterModal" class="bottom-sheet-overlay" @click.self="showCallWaiterModal = false">
+      <div class="bottom-sheet" style="background: white; padding: 24px; border-radius: 20px 20px 0 0; color: #111;">
+        <div style="width: 40px; height: 4px; background: #e0e0e0; border-radius: 2px; margin: 0 auto 16px;"></div>
+        <h3 style="margin: 0 0 16px 0; font-size: 18px; text-align: center;">{{ tDyn('Позвать официанта') }}</h3>
+        
+        <div style="display: flex; flex-direction: column; gap: 8px;">
+          <button @click="submitWaiterCall('Принести счет (картой)')" class="waiter-option-btn">💳 {{ tDyn('Принести счет (картой)') }}</button>
+          <button @click="submitWaiterCall('Принести счет (наличными)')" class="waiter-option-btn">💵 {{ tDyn('Принести счет (наличными)') }}</button>
+          <button @click="submitWaiterCall('Позвать кальянщика')" class="waiter-option-btn">💨 {{ tDyn('Позвать кальянщика') }}</button>
+          <button @click="submitWaiterCall('Просто подойти')" class="waiter-option-btn">🙋 {{ tDyn('Просто подойти') }}</button>
+        </div>
+      </div>
+    </div>
+
+
         <div v-if="activeModal === 'variant' && selectedVariantItem" class="checkout-modal-overlay" @click.self="activeModal = 'none'">
           <div class="checkout-modal" style="border-radius: 20px 20px 0 0;">
             <div class="checkout-header">
@@ -170,12 +186,12 @@
               <div v-if="selectedVariantItem.priceGlass" style="display: flex; justify-content: space-between; align-items: center; background: #f9f9f9; padding: 12px; border-radius: 12px;">
                 <span style="font-weight: bold; font-size: 14px; color: #111;">{{ selectedVariantItem.priceGlassLabel || tDyn('Бокал') }}<br><span style="color: #666; font-size: 12px; font-weight: normal;">{{ Number(selectedVariantItem.priceGlass || 0).toFixed(2) }} ₽</span></span>
                 
-                <div v-if="getItemQuantity(selectedVariantItem.id + '_glass') > 0" class="counter-controls" :style="{ borderColor: restaurantInfo.primaryColor || '#646cff', width: '90px' }">
+                <div v-if="getItemQuantity(selectedVariantItem.id + '_glass') > 0" class="counter-controls" :style="{ borderColor: restaurantInfo.primaryColor || '#9D0D0E', width: '90px' }">
                   <button class="counter-btn" @click="decreaseQuantity(selectedVariantItem.id + '_glass')">-</button>
                   <span class="counter-value">{{ getItemQuantity(selectedVariantItem.id + '_glass') }}</span>
                   <button class="counter-btn" @click="increaseQuantity(selectedVariantItem.id + '_glass')">+</button>
                 </div>
-                <button v-else class="add-to-cart-btn" :style="{ backgroundColor: restaurantInfo.primaryColor || '#646cff', width: 'auto', padding: '8px 16px', color: 'white' }" @click="addToCart({ ...selectedVariantItem, id: selectedVariantItem.id + '_glass', price: selectedVariantItem.priceGlass, name: ((selectedVariantItem.name?.ru || selectedVariantItem.name) + ' (' + (selectedVariantItem.priceGlassLabel || tDyn('Бокал')) + ')') })">
+                <button v-else class="add-to-cart-btn" :style="{ backgroundColor: restaurantInfo.primaryColor || '#9D0D0E', width: 'auto', padding: '8px 16px', color: 'white' }" @click="addToCart({ ...selectedVariantItem, id: selectedVariantItem.id + '_glass', price: selectedVariantItem.priceGlass, name: ((selectedVariantItem.name?.ru || selectedVariantItem.name) + ' (' + (selectedVariantItem.priceGlassLabel || tDyn('Бокал')) + ')') })">
                   + {{ tDyn('добавить') }}
                 </button>
               </div>
@@ -183,12 +199,12 @@
               <div v-if="selectedVariantItem.priceBottle" style="display: flex; justify-content: space-between; align-items: center; background: #f9f9f9; padding: 12px; border-radius: 12px;">
                 <span style="font-weight: bold; font-size: 14px; color: #111;">{{ selectedVariantItem.priceBottleLabel || tDyn('Бутылка') }}<br><span style="color: #666; font-size: 12px; font-weight: normal;">{{ Number(selectedVariantItem.priceBottle || 0).toFixed(2) }} ₽</span></span>
                 
-                <div v-if="getItemQuantity(selectedVariantItem.id + '_bottle') > 0" class="counter-controls" :style="{ borderColor: restaurantInfo.primaryColor || '#646cff', width: '90px' }">
+                <div v-if="getItemQuantity(selectedVariantItem.id + '_bottle') > 0" class="counter-controls" :style="{ borderColor: restaurantInfo.primaryColor || '#9D0D0E', width: '90px' }">
                   <button class="counter-btn" @click="decreaseQuantity(selectedVariantItem.id + '_bottle')">-</button>
                   <span class="counter-value">{{ getItemQuantity(selectedVariantItem.id + '_bottle') }}</span>
                   <button class="counter-btn" @click="increaseQuantity(selectedVariantItem.id + '_bottle')">+</button>
                 </div>
-                <button v-else class="add-to-cart-btn" :style="{ backgroundColor: restaurantInfo.primaryColor || '#646cff', width: 'auto', padding: '8px 16px', color: 'white' }" @click="addToCart({ ...selectedVariantItem, id: selectedVariantItem.id + '_bottle', price: selectedVariantItem.priceBottle, name: ((selectedVariantItem.name?.ru || selectedVariantItem.name) + ' (' + (selectedVariantItem.priceBottleLabel || tDyn('Бутылка')) + ')') })">
+                <button v-else class="add-to-cart-btn" :style="{ backgroundColor: restaurantInfo.primaryColor || '#9D0D0E', width: 'auto', padding: '8px 16px', color: 'white' }" @click="addToCart({ ...selectedVariantItem, id: selectedVariantItem.id + '_bottle', price: selectedVariantItem.priceBottle, name: ((selectedVariantItem.name?.ru || selectedVariantItem.name) + ' (' + (selectedVariantItem.priceBottleLabel || tDyn('Бутылка')) + ')') })">
                   + {{ tDyn('добавить') }}
                 </button>
               </div>
@@ -277,7 +293,7 @@
                 <button 
                   type="submit" 
                   class="submit-order-btn"
-                  :style="{ backgroundColor: restaurantInfo.primaryColor || '#646cff' }"
+                  :style="{ backgroundColor: restaurantInfo.primaryColor || '#9D0D0E' }"
                 >
                   {{ tDyn('Далее: Проверить заказ') }}
                 </button>
@@ -385,57 +401,169 @@
 
                 <div class="review-actions-row">
                   <button class="btn-secondary-action" @click="checkoutStep = 1">{{ tDyn('Назад') }}</button>
-                  <button class="btn-primary-action" @click="confirmOrder" :style="{ backgroundColor: restaurantInfo.primaryColor || '#646cff' }">
+                  <button class="btn-primary-action" @click="confirmOrder" :style="{ backgroundColor: restaurantInfo.primaryColor || '#9D0D0E' }">
                     {{ tDyn('Разместить заказ') }}
                   </button>
                 </div>
-              </div>
-            </template>
+              
+    
+
+  </div>
+</template>
 
           </div>
         </div>
 
           
           
-<div v-if="activeOrders.length > 0 && !showCheckoutModal" class="active-orders-wrapper" style="position: absolute; top: 15px; left: 12px; right: 12px; z-index: 20; pointer-events: none; display: flex; flex-direction: column; gap: 8px;">
-  <div v-for="order in activeOrders" :key="order.id" class="active-order-container" style="pointer-events: none; display: block;">
-    <div class="floating-order-bar" @click="isOrderExpanded[order.id] = !isOrderExpanded[order.id]" style="pointer-events: auto; margin-bottom: 8px;">
-      <div class="order-bar-icon-wrapper" :class="'status-' + order.status">
-        <Clock v-if="order.status === 'new'" :size="20" stroke-width="2" />
-        <ChefHat v-else-if="order.status === 'progress'" :size="20" stroke-width="2" />
-        <CheckCircle v-else-if="order.status === 'done' || order.status === 'archived'" :size="20" stroke-width="2" />
-        <XCircle v-else :size="20" stroke-width="2" />
-      </div>
-      <div class="order-bar-text">
-        <strong>{{ tDyn('Заказ') }} #{{ order.orderNumber || order.id.slice(-4) }}</strong>
-        <span>{{ getOrderStatusText(order.status) }}</span>
-      </div>
-      <div class="order-bar-right">
-        <button v-if="order.status === 'done' || order.status === 'archived' || order.status === 'cancelled'" class="close-order-btn" @click.stop="clearActiveOrder(order.id)">
-          <X :size="14" stroke-width="3" />
-        </button>
-        <ChevronDown class="order-bar-chevron" :class="{ 'expanded': isOrderExpanded[order.id] }" :size="20" />
-      </div>
+
+<div v-if="activeOrders.length > 0 && !showCheckoutModal" style="position: absolute; top: 15px; left: 12px; right: 12px; z-index: 50; display: flex; flex-direction: column; align-items: flex-end; pointer-events: none;">
+  
+  <div v-if="!isOrdersListExpanded" class="orders-mini-icon" @click="isOrdersListExpanded = true" style="pointer-events: auto; position: relative; width: 44px; height: 44px; background: white; border-radius: 50%; display: flex; justify-content: center; align-items: center; box-shadow: 0 4px 12px rgba(0,0,0,0.15); cursor: pointer; color: #111;">
+    <Receipt :size="20" stroke-width="2" />
+    <span class="orders-badge" style="position: absolute; top: -2px; right: -2px; background: #ef4444; color: white; font-size: 10px; font-weight: bold; min-width: 18px; height: 18px; border-radius: 9px; display: flex; justify-content: center; align-items: center; padding: 0 4px; box-sizing: border-box;">
+      {{ activeOrders.length }}
+    </span>
+  </div>
+
+  <div v-if="isOrdersListExpanded" class="expanded-panel" style="pointer-events: auto; width: 100%; max-width: 100%; max-height: calc(100dvh - 100px); overflow-y: auto; background: transparent; display: flex; flex-direction: column; gap: 8px; scrollbar-width: none; padding-bottom: 80px;">
+    <div class="panel-header" style="display: flex; justify-content: space-between; align-items: center; background: white; padding: 12px 16px; border-radius: 12px; box-shadow: 0 4px 15px rgba(0,0,0,0.15);">
+      <strong style="color: #111; font-size: 14px;">{{ tDyn('Мои заказы') }} ({{ activeOrders.length }})</strong>
+      <button @click="isOrdersListExpanded = false" style="background: rgba(0,0,0,0.05); border: none; color: #333; padding: 4px; border-radius: 50%; display: flex; justify-content: center; align-items: center; cursor: pointer;">
+        <X :size="16" stroke-width="3" />
+      </button>
     </div>
 
-    <div v-if="isOrderExpanded[order.id] && order.items" class="order-receipt-card" style="margin-bottom: 8px; pointer-events: auto; max-height: 300px; overflow-y: auto;">
-      <div class="receipt-header">
-        <strong>{{ tDyn('Чек заказа') }}</strong>
-        <span>{{ new Date(order.createdAt || Date.now()).toLocaleTimeString([], {hour: '2-digit', minute:'2-digit'}) }}</span>
-      </div>
-      <div class="receipt-items">
-        <div v-for="item in order.items" :key="item.id" class="receipt-item">
-          <span class="r-name">{{ item.quantity }}x {{ item.name }}</span>
-          <span class="r-price">{{ Number(item.price * item.quantity).toFixed(2) }} ₽</span>
+    <div v-for="order in activeOrders" :key="order.id" class="active-order-container" style="display: block;">
+      <div class="floating-order-bar" @click="isOrderExpanded[order.id] = !isOrderExpanded[order.id]" style="margin-bottom: 8px;">
+        <div class="order-bar-icon-wrapper" :class="'status-' + order.status">
+          <Clock v-if="order.status === 'new'" :size="20" stroke-width="2" />
+          <ChefHat v-else-if="order.status === 'progress'" :size="20" stroke-width="2" />
+          <CheckCircle v-else-if="order.status === 'done' || order.status === 'archived'" :size="20" stroke-width="2" />
+          <XCircle v-else :size="20" stroke-width="2" />
+        </div>
+        <div class="order-bar-text">
+          <strong>{{ tDyn('Заказ') }} #{{ order.orderNumber || order.id.slice(-4) }}</strong>
+          <span>{{ getOrderStatusText(order.status) }}</span>
+        </div>
+        <div class="order-bar-right">
+          <button v-if="order.status === 'done' || order.status === 'archived' || order.status === 'cancelled'" class="close-order-btn" @click.stop="clearActiveOrder(order.id)">
+            <X :size="14" stroke-width="3" />
+          </button>
+          <ChevronDown class="order-bar-chevron" :class="{ 'expanded': isOrderExpanded[order.id] }" :size="20" />
         </div>
       </div>
-      <div class="receipt-total">
-        <span>{{ tDyn('Итого') }}</span>
-        <span>{{ Number(order.totalPrice || order.total).toFixed(2) }} ₽</span>
-      </div>
-    </div>
 
-    <div v-if="order.status === 'done' || order.status === 'archived'" style="animation: fadeIn 0.3s ease; box-shadow: 0 4px 20px rgba(0,0,0,0.4); border-radius: 16px; pointer-events: auto; margin-bottom: 8px;">
+      
+      <div v-if="isOrderExpanded[order.id] && order.items" class="order-tracker-card" style="margin-bottom: 8px; background: white; border-radius: 20px; box-shadow: 0 4px 20px rgba(0,0,0,0.1); overflow: hidden; pointer-events: auto;">
+        
+        <div style="background: #f4f4f4; text-align: center; padding: 12px; font-weight: 600; font-size: 15px; color: #111;">
+          {{ tDyn('Заказ №') }}{{ order.orderNumber || order.id.slice(-4) }}
+        </div>
+
+        <div style="padding: 24px 16px;">
+          <!-- Main Icon -->
+          <div style="display: flex; justify-content: center; margin-bottom: 12px;">
+            <div style="width: 72px; height: 72px; display: flex; align-items: center; justify-content: center; color: #9D0D0E;">
+              <ChefHat v-if="order.status === 'progress'" :size="64" stroke-width="1.5" />
+              <CheckCircle v-else-if="order.status === 'done' || order.status === 'archived'" :size="64" stroke-width="1.5" />
+              <Clock v-else-if="order.status === 'new' || order.status === 'open'" :size="64" stroke-width="1.5" />
+              <XCircle v-else :size="64" stroke-width="1.5" />
+            </div>
+          </div>
+          
+          <div style="text-align: center; margin-bottom: 24px;">
+            <h2 style="margin: 0 0 6px 0; font-size: 24px; color: #111;">
+              {{ order.status === 'progress' ? tDyn('Готовится') : (order.status === 'done' || order.status === 'archived' ? tDyn('Готов') : (order.status === 'cancelled' ? tDyn('Отменен') : tDyn('Отправлен'))) }}
+            </h2>
+            <p style="margin: 0; font-size: 13px; color: #666;">
+              {{ order.status === 'progress' ? tDyn('Повар уже готовит ваше блюдо') : (order.status === 'done' || order.status === 'archived' ? tDyn('Блюдо готово к подаче') : (order.status === 'cancelled' ? tDyn('Заказ был отменен') : tDyn('Ожидаем подтверждения кухни'))) }}
+            </p>
+          </div>
+
+          <!-- Stepper -->
+          <div v-if="order.status !== 'cancelled'" style="display: flex; align-items: center; justify-content: space-between; margin-bottom: 24px; position: relative;">
+            
+            <div style="position: absolute; top: 16px; left: 10%; right: 10%; height: 3px; background: #e0e0e0; z-index: 1;"></div>
+            
+            <!-- Progress lines filling the stepper -->
+            <div style="position: absolute; top: 16px; left: 10%; height: 3px; background: #4caf50; z-index: 2; transition: width 0.3s;"
+                 :style="{ width: (order.status === 'progress' ? '50%' : (order.status === 'done' || order.status === 'archived' ? '100%' : '0%')) }">
+            </div>
+
+            <!-- Step 1: Sent -->
+            <div style="display: flex; flex-direction: column; align-items: center; gap: 6px; z-index: 3; flex: 1;">
+              <div style="width: 32px; height: 32px; border-radius: 50%; display: flex; align-items: center; justify-content: center; color: white;"
+                   :style="{ background: (order.status === 'new' || order.status === 'open') ? '#9D0D0E' : '#4caf50' }">
+                <Check v-if="order.status === 'progress' || order.status === 'done' || order.status === 'archived'" :size="18" stroke-width="3"/>
+                <Clock v-else :size="18" stroke-width="2"/>
+              </div>
+              <span style="font-size: 10px; font-weight: 600;" :style="{ color: '#333' }">{{ tDyn('Отправлен') }}</span>
+            </div>
+
+            <!-- Step 2: Accepted (Bundled with progress visually for simplicity, or lit if progress/done) -->
+            <div style="display: flex; flex-direction: column; align-items: center; gap: 6px; z-index: 3; flex: 1;">
+              <div style="width: 32px; height: 32px; border-radius: 50%; display: flex; align-items: center; justify-content: center; color: white;"
+                   :style="{ background: (order.status === 'progress' || order.status === 'done' || order.status === 'archived') ? '#4caf50' : '#e0e0e0' }">
+                <Check v-if="order.status === 'progress' || order.status === 'done' || order.status === 'archived'" :size="18" stroke-width="3"/>
+                <span v-else style="color: #888; font-weight: bold; font-size: 14px;">2</span>
+              </div>
+              <span style="font-size: 10px; font-weight: 600;" :style="{ color: (order.status === 'progress' || order.status === 'done' || order.status === 'archived') ? '#333' : '#888' }">{{ tDyn('Принят') }}</span>
+            </div>
+
+            <!-- Step 3: Cooking -->
+            <div style="display: flex; flex-direction: column; align-items: center; gap: 6px; z-index: 3; flex: 1;">
+              <div style="width: 32px; height: 32px; border-radius: 50%; display: flex; align-items: center; justify-content: center; color: white;"
+                   :style="{ 
+                      background: (order.status === 'done' || order.status === 'archived') ? '#4caf50' : (order.status === 'progress' ? '#9D0D0E' : '#e0e0e0'),
+                      boxShadow: order.status === 'progress' ? '0 0 0 4px rgba(106, 33, 49, 0.2)' : 'none'
+                   }">
+                <Check v-if="order.status === 'done' || order.status === 'archived'" :size="18" stroke-width="3"/>
+                <Clock v-else-if="order.status === 'progress'" :size="18" stroke-width="2"/>
+                <span v-else style="color: #888; font-weight: bold; font-size: 14px;">3</span>
+              </div>
+              <span style="font-size: 10px; font-weight: 600;" :style="{ color: (order.status === 'done' || order.status === 'archived' || order.status === 'progress') ? (order.status === 'progress' ? '#9D0D0E' : '#333') : '#888' }">{{ tDyn('Готовится') }}</span>
+            </div>
+
+            <!-- Step 4: Ready -->
+            <div style="display: flex; flex-direction: column; align-items: center; gap: 6px; z-index: 3; flex: 1;">
+              <div style="width: 32px; height: 32px; border-radius: 50%; display: flex; align-items: center; justify-content: center; color: white;"
+                   :style="{ 
+                      background: (order.status === 'done' || order.status === 'archived') ? '#9D0D0E' : '#e0e0e0',
+                      boxShadow: (order.status === 'done' || order.status === 'archived') ? '0 0 0 4px rgba(106, 33, 49, 0.2)' : 'none'
+                   }">
+                <Check v-if="order.status === 'done' || order.status === 'archived'" :size="18" stroke-width="3"/>
+                <span v-else style="color: #888; font-weight: bold; font-size: 14px;">4</span>
+              </div>
+              <span style="font-size: 10px; font-weight: 600;" :style="{ color: (order.status === 'done' || order.status === 'archived') ? '#9D0D0E' : '#888' }">{{ tDyn('Готов / Подаем') }}</span>
+            </div>
+          </div>
+
+          <div style="height: 1px; background: #eee; margin: 0 0 16px 0;"></div>
+
+          <h3 style="margin: 0 0 12px 0; font-size: 16px; color: #111;">{{ tDyn('Ваш заказ:') }}</h3>
+          
+          <div style="display: flex; flex-direction: column; gap: 8px; margin-bottom: 24px;">
+            <div v-for="item in order.items" :key="item.id" style="display: flex; font-size: 14px; color: #222;">
+              <span style="width: 24px; color: #666;">{{ item.quantity }}x</span>
+              <span style="flex: 1;">{{ item.name }}</span>
+            </div>
+          </div>
+
+          <button 
+            @click="openCallWaiterModal(order)"
+            :disabled="isWaiterLocked"
+            style="width: 100%; padding: 14px; color: #111; border: none; border-radius: 12px; font-size: 15px; font-weight: 600; cursor: pointer; transition: all 0.2s;"
+            :style="{ background: isWaiterLocked ? '#d1ffd6' : '#eeeeee', color: isWaiterLocked ? '#10b981' : '#111' }">
+            <span v-if="isWaiterLocked">✓ {{ tDyn('Официант уже в пути') }}</span>
+            <span v-else>{{ tDyn('Позвать официанта') }}</span>
+          </button>
+
+        </div>
+      </div>
+
+
+        <div v-if="order.status === 'done' || order.status === 'archived'" style="animation: fadeIn 0.3s ease; box-shadow: 0 4px 20px rgba(0,0,0,0.4); border-radius: 16px; pointer-events: auto; margin-bottom: 8px;">
       <div class="feedback-widget" style="pointer-events: auto;">
         <div class="feedback-title">{{ tDyn('Вам все понравилось?') }}</div>
         <div class="stars-container">
@@ -490,6 +618,8 @@
         </div>
       </div>
     </div>
+
+    </div>
   </div>
 </div>
 <div v-if="cartItems.length > 0 && !showCheckoutModal" class="floating-cart-bar" @click="activeModal = 'cart'" :style="{ backgroundColor: restaurantInfo.primaryColor || '#10b981' }">
@@ -511,6 +641,8 @@
     @close="modifierItem = null" 
     @add-to-cart="(finalItem) => { addToCart(finalItem); modifierItem = null; }" 
   />
+
+
 </template>
 
 <script setup lang="ts">
@@ -529,7 +661,7 @@ import { useRouter } from 'vue-router';
 import { useMenuStore } from '../store/menuStore';
 import PromoBanners from '../components/client/PromoBanners.vue';
 import SettingsbarForClient from '../components/SettingsbarForClient.vue';
-import { ShoppingCart, Star, ConciergeBell, ClipboardCheck, Armchair, Clock, ChefHat, CheckCircle, XCircle, ChevronDown, X } from 'lucide-vue-next';
+import { Check, Receipt, ShoppingCart, Star, ConciergeBell, ClipboardCheck, Armchair, Clock, ChefHat, CheckCircle, XCircle, ChevronDown, X } from 'lucide-vue-next';
 
 // Динамическое определение IP-адреса хоста
 const hostIP = window.location.hostname;
@@ -840,7 +972,62 @@ const handleStorageEvent = (event: StorageEvent) => {
   }
 };
 
-onMounted(() => {
+
+// --- WAITER CALL LOGIC ---
+const showCallWaiterModal = ref(false);
+const currentCallTable = ref('');
+const currentCallRestaurantId = ref('');
+
+// Retrieve lock timestamp from localStorage
+const storedLock = localStorage.getItem('waiter_lock_until');
+const waiterLockUntil = ref(storedLock ? parseInt(storedLock, 10) : 0);
+
+const isWaiterLocked = computed(() => {
+  return waiterLockUntil.value > Date.now();
+});
+
+const openCallWaiterModal = (order: any) => {
+  if (isWaiterLocked.value) return;
+  currentCallTable.value = order.tableNumber || customerForm.value.tableNumber;
+  currentCallRestaurantId.value = order.restaurantId || (restaurantInfo.value as any).id;
+  if (!currentCallTable.value) {
+    alert(tDyn('Неизвестен номер стола.'));
+    return;
+  }
+  showCallWaiterModal.value = true;
+};
+
+const submitWaiterCall = async (callType: string) => {
+  if (isWaiterLocked.value) return;
+  
+  try {
+    const res = await fetch(`${API_URL}/api/call-waiter`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({
+        restaurantId: currentCallRestaurantId.value,
+        tableNumber: currentCallTable.value,
+        callType
+      })
+    });
+    
+    if (res.ok) {
+      const lockTime = Date.now() + 180000; // 3 minutes
+      waiterLockUntil.value = lockTime;
+      localStorage.setItem('waiter_lock_until', lockTime.toString());
+      showCallWaiterModal.value = false;
+    } else {
+      const data = await res.json();
+      alert(data.error || tDyn('Произошла ошибка'));
+    }
+  } catch (err) {
+    console.error(err);
+    alert(tDyn('Ошибка сети'));
+  }
+};
+// ------------------------
+
+  onMounted(() => {
   loadClientMenu();
   window.addEventListener('storage', handleStorageEvent);
   
@@ -867,6 +1054,7 @@ onUnmounted(() => {
   if (orderPollInterval) clearInterval(orderPollInterval);
 });
 
+const isOrdersListExpanded = ref(false);
 const activeOrderIds = ref<string[]>([]);
 const activeOrders = ref<any[]>([]);
 const isOrderExpanded = ref<Record<string, boolean>>({});
@@ -1075,6 +1263,7 @@ const confirmOrder = async () => {
     // Сохраняем активный заказ
     if (!activeOrderIds.value.includes(result.orderId)) {
       activeOrderIds.value.push(result.orderId);
+      isOrdersListExpanded.value = true;
       activeOrders.value.push(result.order);
       localStorage.setItem('active_orders', JSON.stringify(activeOrderIds.value));
     }
@@ -1185,7 +1374,7 @@ const goToConstructor = () => {
   color: white;
   box-shadow: 0 2px 8px rgba(0,0,0,0.1);
 }
-.order-bar-icon-wrapper.status-new { background: linear-gradient(135deg, #60a5fa, #3b82f6); }
+.order-bar-icon-wrapper.status-new { background: #9D0D0E; }
 .order-bar-icon-wrapper.status-progress { background: linear-gradient(135deg, #fbbf24, #f59e0b); }
 .order-bar-icon-wrapper.status-done { background: linear-gradient(135deg, #34d399, #10b981); }
 .order-bar-icon-wrapper.status-archived { background: linear-gradient(135deg, #9ca3af, #6b7280); }
@@ -1339,7 +1528,7 @@ const goToConstructor = () => {
   gap: 8px;
 }
 .feedback-option-card.selected {
-  border-color: #3b82f6;
+  border-color: #9D0D0E;
   background: #eff6ff;
   color: #1d4ed8;
 }
@@ -1499,5 +1688,19 @@ const goToConstructor = () => {
   font-size: 14px;
   margin-top: 12px;
 }
+
+.waiter-option-btn {
+  padding: 16px;
+  background: #f4f5f7;
+  border: 1px solid #e2e8f0;
+  border-radius: 12px;
+  font-size: 15px;
+  font-weight: 500;
+  color: #111;
+  text-align: left;
+  cursor: pointer;
+  transition: background 0.2s;
+}
+.waiter-option-btn:hover { background: #e2e8f0; }
 </style>
 

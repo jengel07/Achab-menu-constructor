@@ -38,7 +38,7 @@ const themes = [
   { bg: '#F8F8F8', text: '#000000', primary: '#353B48' },
   { bg: '#F0FAF9', text: '#006D77', primary: '#20B2AA' },
   { bg: '#FDF7F2', text: '#5D4037', primary: '#8D6E63' },
-  { bg: '#F0F4FF', text: '#1E3A8A', primary: '#3B82F6' },
+  { bg: '#F0F4FF', text: '#1E3A8A', primary: '#9D0D0E' },
   { bg: '#FFF7ED', text: '#9A3412', primary: '#F97316' },
   { bg: '#F0FDF4', text: '#166534', primary: '#22C55E' },
   { bg: '#F5F3FF', text: '#5B21B6', primary: '#8B5CF6' },

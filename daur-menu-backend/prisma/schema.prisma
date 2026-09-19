@@ -20,6 +20,9 @@ model Restaurant {
   dishes     Dish[]     // Связь с блюдами ресторана
   categories Category[] // Связь с категориями
   banners    PromotionBanner[]
+  ordersThreadId String?
+  waitersThreadId String?
+  reviewsThreadId String?
 }
 
 model Menu {

@@ -1,44 +1,32 @@
 const fs = require('fs');
 
-function fixModalPlacement(filePath, isComponent) {
-  let code = fs.readFileSync(filePath, 'utf8');
+let code = fs.readFileSync('src/views/ClientView.vue', 'utf8');
 
-  // 1. Remove the broken insertion
-  const brokenStr = `  <ClientModifiersModal 
-    v-if="modifierItem" 
-    :item="modifierItem" 
-    :restaurantInfo="${isComponent ? 'currentRestaurantInfo' : 'restaurantInfo'}" 
-    @close="modifierItem = null" 
-    @add-to-cart="(finalItem) => { addToCart(finalItem); modifierItem = null; }" 
-  />\n`;
-  
-  code = code.replace(brokenStr, '');
+const startIdx = code.indexOf('<!-- WAITER CALL MODAL -->');
+if (startIdx !== -1) {
+  // Find the end of the modal. It has `<div class="bottom-sheet-overlay">` and inside `<div class="bottom-sheet">` and inside another div. So 3 closing divs total.
+  // We can just find '🙋 {{ tDyn('Просто подойти') }}</button>' and then the next 3 '</div>'s.
+  const endMarker = "🙋 {{ tDyn('Просто подойти') }}</button>";
+  const markerIdx = code.indexOf(endMarker, startIdx);
+  if (markerIdx !== -1) {
+    let endIdx = markerIdx;
+    for (let i = 0; i < 3; i++) {
+      endIdx = code.indexOf('</div>', endIdx + 1);
+    }
+    endIdx += '</div>'.length;
 
-  // 2. Insert it RIGHT BEFORE the end of the root div.
-  // The root div is `<div class="client-wrapper"...` (or something similar).
-  // Actually, wait, let's just insert it RIGHT BEFORE `<script setup lang="ts">`!
-  // Because that's safely outside all DOM elements but inside the file.
-  // Wait, in Vue SFC, <template> has a closing tag </template> right before <script>.
-  // Let's find the last </template> in the file.
-  
-  const lastTemplateIndex = code.lastIndexOf('</template>');
-  if (lastTemplateIndex !== -1) {
-    const validModal = `
-  <ClientModifiersModal 
-    v-if="modifierItem" 
-    :item="modifierItem" 
-    :restaurantInfo="${isComponent ? 'currentRestaurantInfo' : 'restaurantInfo'}" 
-    @close="modifierItem = null" 
-    @add-to-cart="(finalItem) => { addToCart(finalItem); modifierItem = null; }" 
-  />
-`;
-    code = code.substring(0, lastTemplateIndex) + validModal + code.substring(lastTemplateIndex);
+    const modalCode = code.substring(startIdx, endIdx);
+    code = code.substring(0, startIdx) + code.substring(endIdx);
+
+    // Now insert modalCode right before the last </template>
+    const lastTemplateIdx = code.lastIndexOf('</template>');
+    code = code.substring(0, lastTemplateIdx) + '\n' + modalCode + '\n' + code.substring(lastTemplateIdx);
+
+    fs.writeFileSync('src/views/ClientView.vue', code);
+    console.log('Fixed modal placement.');
+  } else {
+    console.log('Could not find end marker.');
   }
-
-  fs.writeFileSync(filePath, code);
-  console.log('Fixed modal placement in', filePath);
+} else {
+  console.log('Could not find start marker.');
 }
-
-fixModalPlacement('src/views/ClientView.vue', false);
-fixModalPlacement('src/components/PhoneMockupContent.vue', true);
-

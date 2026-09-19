@@ -261,7 +261,7 @@ const triggerFileInput = () => {
 }
 
 .dropzone:hover, .dropzone.is-dragover {
-  border-color: #646cff;
+  border-color: #9D0D0E;
   background: rgba(100, 108, 255, 0.05);
 }
 
@@ -279,7 +279,7 @@ const triggerFileInput = () => {
 .upload-icon {
   width: 48px;
   height: 48px;
-  color: #646cff;
+  color: #9D0D0E;
 }
 
 .dropzone-text {
@@ -288,7 +288,7 @@ const triggerFileInput = () => {
 }
 
 .highlight {
-  color: #646cff;
+  color: #9D0D0E;
   font-weight: 500;
   text-decoration: underline;
 }
@@ -309,7 +309,7 @@ const triggerFileInput = () => {
   width: 50px;
   height: 50px;
   border: 4px solid #333;
-  border-top: 4px solid #646cff;
+  border-top: 4px solid #9D0D0E;
   border-radius: 50%;
   animation: spin 1s linear infinite;
   margin-bottom: 24px;
@@ -338,12 +338,12 @@ const triggerFileInput = () => {
 
 .progress-bar {
   height: 100%;
-  background: #646cff;
+  background: #9D0D0E;
   transition: width 0.2s ease;
 }
 
 .progress-value {
-  color: #646cff;
+  color: #9D0D0E;
   font-weight: 600;
   font-size: 0.95rem;
 }

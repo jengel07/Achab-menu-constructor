@@ -159,7 +159,7 @@ const toggleAvailability = async (dish: any) => {
   --text-primary: #f8fafc;
   --text-secondary: #94a3b8;
   --border-color: #334155;
-  --accent-color: #3b82f6;
+  --accent-color: #9D0D0E;
   --danger-color: #ef4444;
   --success-color: #22c55e;
 }

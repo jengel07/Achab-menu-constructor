@@ -106,6 +106,39 @@ ${itemsList || 'Нет позиций'}
 💰 <b>Итого: ${Number(total).toFixed(0)} ₽</b>`;
 
       // Версия для Email (без HTML-тегов Telegram, так как там text)
+      if (settings.notifType === 'telegram' && settings.telegramWebhook) {
+        let url = settings.telegramWebhook;
+        
+        if (url.includes('api.telegram.org') && url.includes('sendMessage')) {
+          const urlObj = new URL(url);
+          urlObj.searchParams.set('text', orderText);
+          urlObj.searchParams.set('parse_mode', 'HTML');
+          
+          const restaurantData = await db.restaurant.findUnique({ where: { id: restaurantId } });
+          
+          if (restaurantData && restaurantData.ordersThreadId) {
+            urlObj.searchParams.set('message_thread_id', restaurantData.ordersThreadId);
+          }
+          
+          url = urlObj.toString();
+          
+          fetch(url)
+            .then(r => r.json())
+            .then(data => console.log('Telegram sent:', data.ok, data))
+            .catch(e => console.error('Telegram error:', e));
+        } else {
+          fetch(url, {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({
+              orderId: newOrder.orderNumber,
+              type, customerName, customerPhone, address, tableNumber,
+              total, text: orderText
+            })
+          }).catch(e => console.error('Webhook error:', e));
+        }
+      }
+
       const emailText = orderText.replace(/<[^>]+>/g, '');
 
       if (settings.emailNotif) {
@@ -122,30 +155,7 @@ ${itemsList || 'Нет позиций'}
          });
       }
       
-      if (settings.notifType === 'telegram' && settings.telegramWebhook) {
-        let url = settings.telegramWebhook;
-        
-        if (url.includes('api.telegram.org') && url.includes('sendMessage')) {
-          const separator = url.includes('?') ? '&' : '?';
-          url = `${url}${separator}text=${encodeURIComponent(orderText)}&parse_mode=HTML`;
-          
-          fetch(url)
-            .then(r => r.json())
-            .then(data => console.log('Telegram sent:', data.ok))
-            .catch(e => console.error('Telegram error:', e));
-        } else {
-          // Иначе просто отправляем POST на любой Webhook (например, Make.com)
-          fetch(url, {
-            method: 'POST',
-            headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify({
-              orderId: newOrder.orderNumber,
-              type, customerName, customerPhone, address, tableNumber,
-              total, text: orderText
-            })
-          }).catch(e => console.error('Webhook error:', e));
-        }
-      }
+      
     } catch(notifErr) {
       console.error("Ошибка при отправке уведомлений:", notifErr);
     }
@@ -273,22 +283,28 @@ router.patch('/:id/feedback', async (req, res) => {
       const info = menu?.info ? JSON.parse(menu.info) : {};
       const settings = info.orderSettings || {};
       
-      if (settings.notifType === 'telegram' && settings.telegramWebhook) {
+            if (settings.notifType === 'telegram' && settings.telegramWebhook) {
         let url = settings.telegramWebhook;
         
         const stars = '⭐'.repeat(rating) + '☆'.repeat(5 - rating);
         const textMsg = `📝 <b>Новый отзыв на заказ #${order.orderNumber}</b>\n\nОценка: ${stars}\nКомментарий: <i>${feedback || 'Без текста'}</i>`;
         
         if (url.includes('api.telegram.org') && url.includes('sendMessage')) {
-          const separator = url.includes('?') ? '&' : '?';
-          url = `${url}${separator}text=${encodeURIComponent(textMsg)}&parse_mode=HTML`;
+          const urlObj = new URL(url);
+          urlObj.searchParams.set('text', textMsg);
+          urlObj.searchParams.set('parse_mode', 'HTML');
+          
+          if (order.restaurant && order.restaurant.reviewsThreadId) {
+            urlObj.searchParams.set('message_thread_id', order.restaurant.reviewsThreadId);
+          }
+          
+          url = urlObj.toString();
           
           fetch(url)
             .then(r => r.json())
             .then(data => console.log('Telegram feedback sent:', data.ok))
             .catch(e => console.error('Telegram error:', e));
         } else {
-          // Webhook
           fetch(url, {
             method: 'POST',
             headers: { 'Content-Type': 'application/json' },
@@ -296,8 +312,7 @@ router.patch('/:id/feedback', async (req, res) => {
               event: 'feedback',
               orderId: order.orderNumber,
               rating,
-              feedback,
-              text: textMsg
+              feedback
             })
           }).catch(e => console.error('Webhook error:', e));
         }

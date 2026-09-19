@@ -225,7 +225,7 @@ const saveProfile = () => {
 }
 
 .btn-update-profile {
-  background: #646cff; /* Акцентный оранжевый цвет бренда */
+  background: #9D0D0E; /* Акцентный оранжевый цвет бренда */
   color: #ffffff;
   border: none;
   padding: 9px 22px;
@@ -295,7 +295,7 @@ const saveProfile = () => {
 
 .action-hint {
   font-size: 11px;
-  color: #646cff;
+  color: #9D0D0E;
   cursor: pointer;
 }
 
@@ -315,7 +315,7 @@ const saveProfile = () => {
 
 .form-group input:focus, 
 .form-group select:focus {
-  border-color: #646cff;
+  border-color: #9D0D0E;
   background-color: #ffffff;
 }
 
@@ -338,7 +338,7 @@ const saveProfile = () => {
 
 .phone-input-group:focus-within,
 .url-input-group:focus-within {
-  border-color: #646cff;
+  border-color: #9D0D0E;
   background-color: #ffffff;
 }
 
@@ -407,7 +407,7 @@ const saveProfile = () => {
 }
 
 input:checked + .slider {
-  background-color: #646cff;
+  background-color: #9D0D0E;
 }
 
 input:checked + .slider:before {

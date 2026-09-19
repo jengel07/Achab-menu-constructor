@@ -255,7 +255,7 @@ const closeModal = () => {
           <button 
             v-if="dietaryFilters.noNuts || dietaryFilters.noLactose || dietaryFilters.noGluten" 
             @click="dietaryFilters.noNuts = false; dietaryFilters.noLactose = false; dietaryFilters.noGluten = false"
-            style="background: none; border: none; color: #4f46e5; font-size: 12px; cursor: pointer; text-decoration: underline; margin-left: auto;"
+            style="background: none; border: none; color: #521926; font-size: 12px; cursor: pointer; text-decoration: underline; margin-left: auto;"
           >
             очистить
           </button>
@@ -506,7 +506,7 @@ const closeModal = () => {
 }
 
 .btn-add {
-  background: var(--accent, #646cff);
+  background: var(--accent, #9D0D0E);
   color: white;
   border: none;
   padding: 10px 20px;
@@ -629,7 +629,7 @@ const closeModal = () => {
 
 .item-price {
   font-weight: 700;
-  color: var(--accent, #646cff);
+  color: var(--accent, #9D0D0E);
   font-size: 1.1rem;
 }
 
@@ -669,7 +669,7 @@ const closeModal = () => {
 }
 
 input:checked + .slider {
-  background-color: var(--accent, #646cff);
+  background-color: var(--accent, #9D0D0E);
 }
 
 input:checked + .slider:before {
@@ -752,8 +752,8 @@ input:checked + .slider:before {
 .btn-generate-ai {
   margin-top: 8px;
   background: var(--bg-input-inner, #1e1e24);
-  color: var(--accent, #646cff);
-  border: 1px dashed var(--accent, #646cff);
+  color: var(--accent, #9D0D0E);
+  border: 1px dashed var(--accent, #9D0D0E);
   border-radius: 8px;
   padding: 8px;
   font-size: 11px;
@@ -765,7 +765,7 @@ input:checked + .slider:before {
   transition: all 0.2s;
 }
 .btn-generate-ai:hover {
-  background: var(--accent, #646cff);
+  background: var(--accent, #9D0D0E);
   color: #fff;
 }
 .btn-generate-ai:disabled {
@@ -801,7 +801,7 @@ input:checked + .slider:before {
 }
 
 .btn-save {
-  background: var(--accent, #646cff);
+  background: var(--accent, #9D0D0E);
   color: white;
   border: none;
   padding: 10px 20px;
@@ -837,7 +837,7 @@ input:checked + .slider:before {
 
 .image-upload-area.is-loading {
   cursor: wait;
-  border-color: var(--accent, #646cff);
+  border-color: var(--accent, #9D0D0E);
 }
 
 .image-upload-area.has-error {
@@ -861,14 +861,14 @@ input:checked + .slider:before {
 
 .loading-text {
   font-size: 0.8rem;
-  color: var(--accent, #646cff);
+  color: var(--accent, #9D0D0E);
 }
 
 .spinner {
   width: 30px;
   height: 30px;
   border: 3px solid rgba(100, 108, 255, 0.2);
-  border-top-color: var(--accent, #646cff);
+  border-top-color: var(--accent, #9D0D0E);
   border-radius: 50%;
   animation: spin 1s linear infinite;
 }
@@ -915,8 +915,8 @@ input:checked + .slider:before {
   white-space: nowrap;
 }
 .compact-tag-toggle.active {
-  background: rgba(99, 102, 241, 0.15);
-  border-color: #6366f1;
+  background: rgba(106, 33, 49, 0.15);
+  border-color: #9D0D0E;
   color: #818cf8;
 }
 .tag-icon { font-size: 14px; }

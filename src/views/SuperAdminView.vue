@@ -2,7 +2,7 @@
   <div class="super-admin-layout">
     <!-- Боковая панель -->
     <aside class="sa-sidebar">
-      <div class="sa-logo">Daur Platform 👑</div>
+      <img src="/logo-light.png" class="brand-logo-img" alt="Achab Menu" />
       <nav>
         <button 
           :class="['nav-btn', { active: currentTab === 'restaurants' }]" 
@@ -308,7 +308,7 @@ nav {
 }
 
 .nav-btn.active {
-  background-color: #3b82f6;
+  background-color: #9D0D0E;
   color: white;
 }
 
@@ -356,7 +356,7 @@ nav {
   transition: border-color 0.2s;
 }
 .search-input:focus {
-  border-color: #3b82f6;
+  border-color: #9D0D0E;
 }
 
 /* 1. Таблица Ресторанов */
@@ -475,7 +475,7 @@ nav {
   color: #6b7280;
   transition: all 0.2s;
 }
-.add-new:hover { border-color: #3b82f6; color: #3b82f6; background-color: #eff6ff; }
+.add-new:hover { border-color: #9D0D0E; color: #9D0D0E; background-color: #eff6ff; }
 .add-icon { font-size: 40px; font-weight: 300; margin-bottom: 8px; }
 
 /* 3. Статистика */
@@ -489,7 +489,7 @@ nav {
   border-radius: 12px;
   box-shadow: 0 1px 3px rgba(0,0,0,0.1);
 }
-.stat-card.highlight { background: linear-gradient(135deg, #1e3a8a, #3b82f6); color: white; }
+.stat-card.highlight { background: linear-gradient(135deg, #1e3a8a, #9D0D0E); color: white; }
 .stat-card.highlight .stat-title, .stat-card.highlight .stat-trend { color: #dbeafe; }
 
 .stat-title { font-size: 14px; color: #6b7280; margin-bottom: 8px; font-weight: 500; }
@@ -515,5 +515,12 @@ nav {
   justify-content: center;
   color: #9ca3af;
   font-size: 14px;
+}
+</style>
+<style scoped>
+.brand-logo-img {
+  height: 48px;
+  object-fit: contain;
+  margin-bottom: 24px;
 }
 </style>

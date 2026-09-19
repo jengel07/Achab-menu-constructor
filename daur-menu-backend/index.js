@@ -465,9 +465,8 @@ app.delete('/api/banners/:id', authMiddleware, adminOnly, async (req, res) => {
 
 app.get('/api/menu', async (req, res) => {
   try {
-    const { restaurantId } = req.query; // Ловим ID из параметров ссылки
+    const { restaurantId } = req.query; 
 
-    // Если клиент пришел по QR-коду с ID, ищем конкретное меню. Если нет — берем первое
     const whereClause = restaurantId ? { restaurantId } : {};
 
     const menuRecord = await db.menu.findFirst({
@@ -546,6 +545,17 @@ app.post('/api/menu/:restaurantId', authMiddleware, adminOnly, async (req, res) 
       if (info !== undefined) menuUpdateData.info = JSON.stringify(info || {});
       if (cats !== undefined) menuUpdateData.cats = JSON.stringify(cats || []);
       if (generalSettings !== undefined) menuUpdateData.general_settings = JSON.stringify(generalSettings || {});
+
+      if (info && info.orderSettings) {
+        await tx.restaurant.update({
+          where: { id: restaurantId },
+          data: {
+            ordersThreadId: info.orderSettings.ordersThreadId !== undefined ? info.orderSettings.ordersThreadId : undefined,
+            waitersThreadId: info.orderSettings.waitersThreadId !== undefined ? info.orderSettings.waitersThreadId : undefined,
+            reviewsThreadId: info.orderSettings.reviewsThreadId !== undefined ? info.orderSettings.reviewsThreadId : undefined
+          }
+        });
+      }
 
       if (Object.keys(menuUpdateData).length > 0) {
         await tx.menu.updateMany({
@@ -963,6 +973,69 @@ const __dirname = path.dirname(__filename);
 // ============================================================
 
 // Отдача статики фронтенда (папка public)
+
+// --- WAITER CALL FEATURE ---
+const callWaiterLocks = new Map();
+
+app.post('/api/call-waiter', async (req, res) => {
+  try {
+    const { restaurantId, tableNumber, callType } = req.body;
+    if (!restaurantId || !tableNumber || !callType) {
+      return res.status(400).json({ error: 'Missing required fields' });
+    }
+
+    const lockKey = `${restaurantId}_${tableNumber}`;
+    const now = Date.now();
+    const lastCall = callWaiterLocks.get(lockKey);
+
+    if (lastCall && (now - lastCall < 180000)) {
+      return res.status(429).json({ error: 'Too many requests. Please wait 3 minutes.' });
+    }
+
+    callWaiterLocks.set(lockKey, now);
+
+    const menu = await db.menu.findFirst({ where: { restaurantId } });
+    const info = menu?.info ? JSON.parse(menu.info) : {};
+    const settings = info.orderSettings || {};
+
+    const restaurantData = await db.restaurant.findUnique({ where: { id: restaurantId } });
+    if (settings.notifType === 'telegram' && settings.telegramWebhook) {
+      let url = settings.telegramWebhook;
+      
+      const message = `🔔 <b>Вызов официанта!</b>\nСтол №${tableNumber}\nЗапрос: ${callType}`;
+      
+      if (url.includes('api.telegram.org') && url.includes('sendMessage')) {
+        const urlObj = new URL(url);
+        urlObj.searchParams.set('text', message);
+        urlObj.searchParams.set('parse_mode', 'HTML');
+        
+        if (restaurantData && restaurantData.waitersThreadId) {
+          urlObj.searchParams.set('message_thread_id', restaurantData.waitersThreadId);
+        }
+        
+        fetch(urlObj.toString(), { method: 'GET' })
+          .then(res => res.json())
+          .then(data => console.log('Telegram waiter call sent:', data.ok))
+          .catch(e => console.error('Telegram error:', e));
+      }
+    }
+
+    if (global.io) {
+      global.io.to(restaurantId).emit('waiter_call', {
+        tableNumber,
+        callType,
+        timestamp: new Date()
+      });
+    }
+
+    res.json({ success: true });
+  } catch (err) {
+    console.error('Error calling waiter:', err);
+    res.status(500).json({ error: 'Internal server error' });
+  }
+});
+// ---------------------------
+
 app.use(express.static(path.join(__dirname, 'public')));
 
 // Fallback для SPA (Vue Router)

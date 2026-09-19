@@ -91,7 +91,7 @@ const languages = [
 .bottom-sheet h3 {
   font-size: 13px;
   margin: 0;
-  color: #646cff;
+  color: #9D0D0E;
 }
 
 .lang-grid {
