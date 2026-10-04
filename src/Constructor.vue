@@ -27,6 +27,9 @@ import {
   FileText,
   QrCode,
   ClipboardList,
+    Pen,
+    Eye,
+    Smartphone,
   Sun,
   Moon,
   RotateCcw,
@@ -90,6 +93,13 @@ const fileInputRef = ref<HTMLInputElement | null>(null);
 // SIDEBAR STATE
 // ═══════════════════════════════════════════════════════
 const isMenuOpen = ref(false);
+const isMobileSidebarOpen = ref(false);
+
+const openMobilePreview = () => {
+  window.open('/client?preview=true', '_blank');
+  isMobileSidebarOpen.value = false;
+};
+
 type SidebarView = 'main' | 'orders' | 'staff' | 'payment' | 'profile' | 'filters' | 'trash' | 'tariff';
 const sidebarView = ref<SidebarView>('main');
 
@@ -582,15 +592,21 @@ const updateRestaurantInfo = (newData: typeof menuStore.restaurantInfo) => {
     </div>
     <div class="constructor-layout" :style="isBlocked && sidebarView !== 'payment' ? 'pointer-events: none; opacity: 0.5;' : ''">
 
-      <aside class="sidebar">
+      <div v-if="isMobileSidebarOpen" class="mobile-sidebar-backdrop" @click="isMobileSidebarOpen = false"></div>
+        <aside class="sidebar" :class="{ 'mobile-open': isMobileSidebarOpen }">
         <div class="sidebar-header">
-          <div style="display: flex; align-items: center; gap: 10px; margin-bottom: 12px;">
-            <button @click="isMenuOpen = true" class="btn-theme-toggle" title="Открыть меню"
-              style="width: 32px; height: 32px; padding: 0; display: flex; align-items: center; justify-content: center;">
-              <MenuIcon :size="18" stroke-width="2" />
-            </button>
-            <img :src="isLightTheme ? '/logo-light.png' : '/logo-dark.png'" alt="Achab" style="height: 32px; object-fit: contain; margin: 0;" />
-          </div>
+          <div class="desktop-only" style="display: flex; align-items: center; gap: 10px; margin-bottom: 12px;">
+  <button @click="isMenuOpen = true; isMobileSidebarOpen = false" class="btn-theme-toggle" title="Отрыть меню"
+    style="width: 32px; height: 32px; padding: 0; display: flex; align-items: center; justify-content: center;">
+    <MenuIcon :size="18" stroke-width="2" />
+  </button>
+  <img :src="isLightTheme ? '/logo-light.png' : '/logo-dark.png'" alt="Achab" style="height: 32px; object-fit: contain; margin: 0;" />
+</div>
+<div class="mobile-only sidebar-mobile-close-row">
+  <button @click="isMobileSidebarOpen = false" class="btn-theme-toggle" style="width: 32px; height: 32px; padding: 0; display: flex; align-items: center; justify-content: center;">
+    <X :size="20" stroke-width="2" />
+  </button>
+</div>
 
           <div class="header-actions-row">
             <span class="status-badge">Режим редактирования</span>
@@ -600,9 +616,19 @@ const updateRestaurantInfo = (newData: typeof menuStore.restaurantInfo) => {
           </div>
         </div>
 
-        <nav class="sidebar-menu">
+        <div class="mobile-only sidebar-mode-toggle" style="display: flex; background: rgba(150,150,150,0.15); padding: 4px; border-radius: 12px; margin: 0 16px 16px; gap: 4px;">
+            <button class="mode-btn active" style="flex: 1; display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 4px; padding: 10px 4px; border-radius: 8px; border: none; background: var(--bg-panel); color: var(--accent); font-size: 11px; font-weight: 600; cursor: pointer; box-shadow: 0 1px 3px rgba(0,0,0,0.1);">
+              <Pen :size="18" stroke-width="2" style="color: var(--accent)" />
+              Редактирование
+            </button>
+            <button class="mode-btn" @click="openMobilePreview" style="flex: 1; display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 4px; padding: 10px 4px; border-radius: 8px; border: none; background: transparent; color: inherit; font-size: 11px; font-weight: 500; cursor: pointer; opacity: 0.7;">
+              <Eye :size="18" stroke-width="2" />
+              Предпросмотр
+            </button>
+          </div>
+          <nav class="sidebar-menu">
           <button v-for="tab in ['navigation', 'colors', 'branding', 'banners', 'general', 'qrcode', 'orders']" :key="tab"
-            class="menu-btn" :class="{ active: activeTab === tab }" @click="activeTab = tab as any">
+            class="menu-btn" :class="{ active: activeTab === tab }" @click="activeTab = tab as any; isMobileSidebarOpen = false">
             <span class="icon" style="display: flex; align-items: center;">
               <UtensilsCrossed v-if="tab === 'navigation'" :size="18" stroke-width="2" />
               <Palette v-else-if="tab === 'colors'" :size="18" stroke-width="2" />
@@ -611,13 +637,16 @@ const updateRestaurantInfo = (newData: typeof menuStore.restaurantInfo) => {
               <FileText v-else-if="tab === 'general'" :size="18" stroke-width="2" />
               <QrCode v-else-if="tab === 'qrcode'" :size="18" stroke-width="2" />
               <ClipboardList v-else-if="tab === 'orders'" :size="18" stroke-width="2" />
+                
             </span>
-            {{ tab === 'navigation' ? 'Навигация и блюда' : tab === 'colors' ? 'Цвета интерфейса' : tab === 'branding' ? 'Брендинг и лого' : tab === 'banners' ? 'Баннеры' : tab === 'banners' ? 'Баннеры' : tab === 'general' ? 'Общие данные' : tab === 'qrcode' ? 'QR-код меню' : 'Настройка заказов' }}
+            {{ tab === 'navigation' ? 'Навигация и блюда' : tab === 'colors' ? 'Цвета интерфейса' : tab === 'branding' ? 'Брендинг и лого' : tab === 'banners' ? 'Баннеры' : tab === 'banners' ? 'Баннеры' : tab === 'general' ? 'Общие данные' : tab === 'qrcode' ? 'QR-код меню' : 'Настройки заказов' }}
           </button>
         </nav>
 
         <div style="padding: 0 16px; display: flex; flex-direction: column; gap: 8px; margin-top: auto;">
-          <button @click="manualSave" class="btn-save-menu"
+          
+            
+            <button @click="manualSave" class="btn-save-menu"
             style="display: flex; align-items: center; justify-content: center; gap: 6px; width: 100%; padding: 10px; background-color: #22c55e; color: white; border: none; border-radius: 8px; cursor: pointer; font-weight: 500;">
             <Save :size="14" stroke-width="2" /> Сохранить меню
           </button>
@@ -634,8 +663,24 @@ const updateRestaurantInfo = (newData: typeof menuStore.restaurantInfo) => {
 
       <main class="editor-area">
         <header class="editor-header">
-          <h1 class="tab-title">Настройка раздела</h1>
-        </header>
+  <div class="mobile-only" style="display:flex; align-items:center;">
+    <button @click="isMobileSidebarOpen = true; isMenuOpen = false" class="btn-theme-toggle" style="width: 36px; height: 36px; padding: 0; display: flex; align-items: center; justify-content: center;">
+      <MenuIcon :size="22" stroke-width="2" />
+    </button>
+  </div>
+  
+  <h1 class="tab-title desktop-only">Редактирование меню</h1>
+  
+  <div class="mobile-only" style="display:flex; align-items:center;">
+    <img :src="isLightTheme ? '/logo-light.png' : '/logo-dark.png'" alt="Achab" style="height: 24px; object-fit: contain; margin: 0;" />
+  </div>
+
+  <div class="mobile-only" style="display:flex; align-items:center;">
+    <button class="btn-mobile-avatar" @click="isMenuOpen = true; isMobileSidebarOpen = false">
+      <div class="smenu-avatar">{{ (menuStore.userInfo?.name || 'U')[0].toUpperCase() }}</div>
+    </button>
+  </div>
+</header>
 
         <div class="editor-content" :style="isBlocked && sidebarView !== 'payment' ? 'pointer-events: none; opacity: 0.5;' : ''">
           <MenuEditor v-if="activeTab === 'navigation'" :items="menuStore.items" :categories="menuStore.categories"
@@ -652,6 +697,7 @@ const updateRestaurantInfo = (newData: typeof menuStore.restaurantInfo) => {
             @update:model-value="updateRestaurantInfo" />
           <OrderSettingsEditor v-else-if="activeTab === 'orders'" :model-value="menuStore.restaurantInfo"
             @update:model-value="updateRestaurantInfo" />
+            
         </div>
       </main>
 

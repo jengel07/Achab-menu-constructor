@@ -38,6 +38,7 @@ model Menu {
   items            String?
   cats             String?
   general_settings String?
+  orderMode        String     @default("ORDER")
   restaurantId     String
   restaurant       Restaurant @relation(fields: [restaurantId], references: [id], onDelete: Cascade)
 }

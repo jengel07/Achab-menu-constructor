@@ -1,23 +1,50 @@
 const fs = require('fs');
-const path = 'src/components/client/PromoBanners.vue';
-let code = fs.readFileSync(path, 'utf8');
 
-// 1. Remove debug boxes
-code = code.replace(
-  /<div v-else-if="restaurantId" style="background: red;[^>]+>[\s\S]*?<\/div>\s*<div v-else style="background: blue;[^>]+>[\s\S]*?<\/div>/,
-  ''
-);
+let code = fs.readFileSync('src/style.css', 'utf8');
 
-// 2. Adjust CSS for full width with small margin
-code = code.replace(
-  /margin: 0 16px;/,
-  'margin: 0 3mm;'
-);
-code = code.replace(
-  /border-radius: 16px;/,
-  'border-radius: 12px;'
-);
+// Remove the previously appended queries
+code = code.replace(/@media \(max-width: 1024px\).*?padding: 16px;\s*}\s*}/s, '');
 
-fs.writeFileSync(path, code);
-console.log('Fixed PromoBanners styling and removed debug');
+// Append better queries
+const newQueries = `
+@media (max-width: 1200px) {
+  .constructor-layout {
+    grid-template-columns: 280px 1fr 0px;
+  }
+  .preview-area {
+    display: none !important;
+  }
+}
 
+@media (max-width: 900px) {
+  .constructor-layout {
+    display: flex;
+    flex-direction: column;
+    height: 100vh;
+  }
+  .sidebar {
+    display: none !important;
+  }
+  .preview-area {
+    display: none !important;
+  }
+  .editor-area {
+    flex-grow: 1;
+    width: 100%;
+  }
+  .btn-mobile-menu {
+    display: flex !important;
+  }
+  .editor-header {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    padding: 16px;
+  }
+  .editor-content {
+    padding: 16px;
+  }
+}
+`;
+
+fs.writeFileSync('src/style.css', code + newQueries);

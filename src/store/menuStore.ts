@@ -18,6 +18,7 @@ export const useMenuStore = defineStore('menu', () => {
   const categories = ref<MenuCategory[]>([]);
   const items = ref<MenuItem[]>([]);
 
+  const orderMode = ref("ORDER");
   const generalSettings = ref({
     wifiEnabled: true,
     wifiSsid: '',
@@ -94,6 +95,7 @@ export const useMenuStore = defineStore('menu', () => {
       if (data.categories?.length) categories.value = data.categories as MenuCategory[];
       if (data.items?.length) items.value = data.items as MenuItem[];
 
+      if (data.orderMode) orderMode.value = data.orderMode;
       if (data.generalSettings && Object.keys(data.generalSettings).length) {
         generalSettings.value = { ...generalSettings.value, ...(data.generalSettings as typeof generalSettings.value) };
       }
@@ -123,6 +125,7 @@ export const useMenuStore = defineStore('menu', () => {
       if (parsed.restaurantInfo) restaurantInfo.value = { ...restaurantInfo.value, ...parsed.restaurantInfo };
       if (parsed.categories?.length) categories.value = parsed.categories;
       if (parsed.items?.length) items.value = parsed.items;
+      if (parsed.orderMode) orderMode.value = parsed.orderMode;
       if (parsed.generalSettings) generalSettings.value = { ...generalSettings.value, ...parsed.generalSettings };
       syncWifi();
     } catch (e) {
@@ -179,7 +182,8 @@ export const useMenuStore = defineStore('menu', () => {
         info: restaurantInfo.value,
         items: items.value,
         cats: categories.value,
-        generalSettings: generalSettings.value,
+        orderMode: orderMode.value,
+          generalSettings: generalSettings.value,
       });
     } catch (error) {
       console.error('❌ Ошибка синхронизации с сервером:', error);
@@ -203,7 +207,7 @@ export const useMenuStore = defineStore('menu', () => {
   // Watchers
   // ============================================================
   watch(
-    [restaurantInfo, categories, items, generalSettings],
+    [restaurantInfo, categories, items, generalSettings, orderMode],
     () => {
       if (isInitializing) return;
       if (window.location.pathname === '/client' && !window.location.search.includes('preview=true')) return;
@@ -276,6 +280,7 @@ export const useMenuStore = defineStore('menu', () => {
     categories,
     items,
     generalSettings,
+    orderMode,
     userInfo,
     trashedItems,
     updateItems,

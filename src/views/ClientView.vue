@@ -113,16 +113,16 @@
                   <div v-else></div>
 
                   <div v-if="!item.priceBottle && !item.priceGlass">
-                    <div v-if="getItemQuantity(item.id) > 0" class="counter-controls" :style="{ borderColor: restaurantInfo.primaryColor || '#9D0D0E' }">
+                    <div v-if="getItemQuantity(item.id) > 0 && store.orderMode !== 'CATALOG'" class="counter-controls" :style="{ borderColor: restaurantInfo.primaryColor || '#9D0D0E' }">
                       <button class="counter-btn" @click="decreaseQuantity(item.id)">-</button>
                       <span class="counter-value">{{ getItemQuantity(item.id) }}</span>
                       <button class="counter-btn" @click="increaseQuantity(item.id)">+</button>
                     </div>
-                    <button v-else class="add-to-cart-btn" :style="{ backgroundColor: restaurantInfo.primaryColor || '#9D0D0E', width: '100%', padding: '6px 12px' }" @click="item.modifiers && item.modifiers.length > 0 ? modifierItem = item : addToCart(item)">+ {{ item.modifiers && item.modifiers.length > 0 ? tDyn('опции') : tDyn('добавить') }}</button>
+                    <button v-else-if="store.orderMode !== 'CATALOG'" class="add-to-cart-btn" :style="{ backgroundColor: restaurantInfo.primaryColor || '#9D0D0E', width: '100%', padding: '6px 12px' }" @click="item.modifiers && item.modifiers.length > 0 ? modifierItem = item : addToCart(item)">+ {{ item.modifiers && item.modifiers.length > 0 ? tDyn('опции') : tDyn('добавить') }}</button>
                   </div>
 
                   <div v-else>
-                    <button class="add-to-cart-btn" :style="{ backgroundColor: restaurantInfo.primaryColor || '#9D0D0E', width: '100%', padding: '6px 12px' }" @click="openVariantModal(item)">
+                    <button v-if="store.orderMode !== 'CATALOG'" class="add-to-cart-btn" :style="{ backgroundColor: restaurantInfo.primaryColor || '#9D0D0E', width: '100%', padding: '6px 12px' }" @click="openVariantModal(item)">
                       + {{ tDyn('выбрать') }}
                     </button>
                   </div>
@@ -157,20 +157,48 @@
           @toggle-filter="toggleFilter"
           @clear-filters="selectedFilters = []"
           @update:searchQuery="val => searchQuery = val"
+          @call-waiter="openCallWaiterModalFromCart"
         />
 
+        <button v-if="!showCheckoutModal" class="floating-waiter-fab" 
+            @click="openCallWaiterModalFromCart"
+            :style="{ 
+              color: restaurantInfo.primaryColor || '#10b981',
+              zIndex: 9999
+            }">
+            <ConciergeBell :size="24" />
+        </button>
+
 <!-- WAITER CALL MODAL -->
-    <div v-if="showCallWaiterModal" class="bottom-sheet-overlay" @click.self="showCallWaiterModal = false">
+    <div v-if="showCallWaiterModal" class="bottom-sheet-overlay" @click.self="showCallWaiterModal = false" style="z-index: 10000;">
       <div class="bottom-sheet" style="background: white; padding: 24px; border-radius: 20px 20px 0 0; color: #111;">
         <div style="width: 40px; height: 4px; background: #e0e0e0; border-radius: 2px; margin: 0 auto 16px;"></div>
         <h3 style="margin: 0 0 16px 0; font-size: 18px; text-align: center;">{{ tDyn('Позвать официанта') }}</h3>
         
-        <div style="display: flex; flex-direction: column; gap: 8px;">
-          <button @click="submitWaiterCall('Принести счет (картой)')" class="waiter-option-btn">💳 {{ tDyn('Принести счет (картой)') }}</button>
-          <button @click="submitWaiterCall('Принести счет (наличными)')" class="waiter-option-btn">💵 {{ tDyn('Принести счет (наличными)') }}</button>
-          <button @click="submitWaiterCall('Позвать кальянщика')" class="waiter-option-btn">💨 {{ tDyn('Позвать кальянщика') }}</button>
-          <button @click="submitWaiterCall('Просто подойти')" class="waiter-option-btn">🙋 {{ tDyn('Просто подойти') }}</button>
-        </div>
+        <template v-if="isWaiterLocked">
+          <div style="text-align: center; padding: 20px 0;">
+            <div style="font-size: 48px; font-weight: bold; color: #9D0D0E; margin-bottom: 16px;">
+              {{ waiterLockRemaining }}
+            </div>
+            <p style="font-size: 14px; color: #555; line-height: 1.5; margin: 0;">
+              {{ tDyn('Ожидайте официанта в течении 5 минут, если по истичении этого времени официант не подошлел - нажмите еще раз') }}
+            </p>
+          </div>
+        </template>
+        
+        <template v-else>
+          <div style="margin-bottom: 16px;">
+            <label style="display: block; font-size: 12px; font-weight: bold; margin-bottom: 8px; color: #555; text-align: center;">{{ tDyn('Ваш столик') }}</label>
+            <input v-model="currentCallTable" type="text" :placeholder="tDyn('Например: 5')" style="width: 100%; padding: 12px; border-radius: 12px; border: 1px solid #ddd; font-size: 16px; outline: none; box-sizing: border-box; text-align: center; background: #f9f9f9; color: #111;" />
+          </div>
+
+          <div style="display: flex; flex-direction: column; gap: 8px;" :style="{ opacity: currentCallTable ? 1 : 0.5, pointerEvents: currentCallTable ? 'auto' : 'none' }">
+            <button @click="submitWaiterCall('Принести меню (счет)')" class="waiter-option-btn">🧾 {{ tDyn('Принести меню (счет)') }}</button>
+            <button @click="submitWaiterCall('Убрать со стола (грязное)')" class="waiter-option-btn">🍽️ {{ tDyn('Убрать со стола (грязное)') }}</button>
+            <button @click="submitWaiterCall('Нужна пепельница')" class="waiter-option-btn">🚬 {{ tDyn('Нужна пепельница') }}</button>
+            <button @click="submitWaiterCall('Сделать заказ')" class="waiter-option-btn">🛎️ {{ tDyn('Сделать заказ') }}</button>
+          </div>
+        </template>
       </div>
     </div>
 
@@ -186,12 +214,12 @@
               <div v-if="selectedVariantItem.priceGlass" style="display: flex; justify-content: space-between; align-items: center; background: #f9f9f9; padding: 12px; border-radius: 12px;">
                 <span style="font-weight: bold; font-size: 14px; color: #111;">{{ selectedVariantItem.priceGlassLabel || tDyn('Бокал') }}<br><span style="color: #666; font-size: 12px; font-weight: normal;">{{ Number(selectedVariantItem.priceGlass || 0).toFixed(2) }} ₽</span></span>
                 
-                <div v-if="getItemQuantity(selectedVariantItem.id + '_glass') > 0" class="counter-controls" :style="{ borderColor: restaurantInfo.primaryColor || '#9D0D0E', width: '90px' }">
+                <div v-if="getItemQuantity(selectedVariantItem.id + '_glass') > 0 && store.orderMode !== 'CATALOG'" class="counter-controls" :style="{ borderColor: restaurantInfo.primaryColor || '#9D0D0E', width: '90px' }">
                   <button class="counter-btn" @click="decreaseQuantity(selectedVariantItem.id + '_glass')">-</button>
                   <span class="counter-value">{{ getItemQuantity(selectedVariantItem.id + '_glass') }}</span>
                   <button class="counter-btn" @click="increaseQuantity(selectedVariantItem.id + '_glass')">+</button>
                 </div>
-                <button v-else class="add-to-cart-btn" :style="{ backgroundColor: restaurantInfo.primaryColor || '#9D0D0E', width: 'auto', padding: '8px 16px', color: 'white' }" @click="addToCart({ ...selectedVariantItem, id: selectedVariantItem.id + '_glass', price: selectedVariantItem.priceGlass, name: ((selectedVariantItem.name?.ru || selectedVariantItem.name) + ' (' + (selectedVariantItem.priceGlassLabel || tDyn('Бокал')) + ')') })">
+                <button v-else-if="store.orderMode !== 'CATALOG'" class="add-to-cart-btn" :style="{ backgroundColor: restaurantInfo.primaryColor || '#9D0D0E', width: 'auto', padding: '8px 16px', color: 'white' }" @click="addToCart({ ...selectedVariantItem, id: selectedVariantItem.id + '_glass', price: selectedVariantItem.priceGlass, name: ((selectedVariantItem.name?.ru || selectedVariantItem.name) + ' (' + (selectedVariantItem.priceGlassLabel || tDyn('Бокал')) + ')') })">
                   + {{ tDyn('добавить') }}
                 </button>
               </div>
@@ -199,12 +227,12 @@
               <div v-if="selectedVariantItem.priceBottle" style="display: flex; justify-content: space-between; align-items: center; background: #f9f9f9; padding: 12px; border-radius: 12px;">
                 <span style="font-weight: bold; font-size: 14px; color: #111;">{{ selectedVariantItem.priceBottleLabel || tDyn('Бутылка') }}<br><span style="color: #666; font-size: 12px; font-weight: normal;">{{ Number(selectedVariantItem.priceBottle || 0).toFixed(2) }} ₽</span></span>
                 
-                <div v-if="getItemQuantity(selectedVariantItem.id + '_bottle') > 0" class="counter-controls" :style="{ borderColor: restaurantInfo.primaryColor || '#9D0D0E', width: '90px' }">
+                <div v-if="getItemQuantity(selectedVariantItem.id + '_bottle') > 0 && store.orderMode !== 'CATALOG'" class="counter-controls" :style="{ borderColor: restaurantInfo.primaryColor || '#9D0D0E', width: '90px' }">
                   <button class="counter-btn" @click="decreaseQuantity(selectedVariantItem.id + '_bottle')">-</button>
                   <span class="counter-value">{{ getItemQuantity(selectedVariantItem.id + '_bottle') }}</span>
                   <button class="counter-btn" @click="increaseQuantity(selectedVariantItem.id + '_bottle')">+</button>
                 </div>
-                <button v-else class="add-to-cart-btn" :style="{ backgroundColor: restaurantInfo.primaryColor || '#9D0D0E', width: 'auto', padding: '8px 16px', color: 'white' }" @click="addToCart({ ...selectedVariantItem, id: selectedVariantItem.id + '_bottle', price: selectedVariantItem.priceBottle, name: ((selectedVariantItem.name?.ru || selectedVariantItem.name) + ' (' + (selectedVariantItem.priceBottleLabel || tDyn('Бутылка')) + ')') })">
+                <button v-else-if="store.orderMode !== 'CATALOG'" class="add-to-cart-btn" :style="{ backgroundColor: restaurantInfo.primaryColor || '#9D0D0E', width: 'auto', padding: '8px 16px', color: 'white' }" @click="addToCart({ ...selectedVariantItem, id: selectedVariantItem.id + '_bottle', price: selectedVariantItem.priceBottle, name: ((selectedVariantItem.name?.ru || selectedVariantItem.name) + ' (' + (selectedVariantItem.priceBottleLabel || tDyn('Бутылка')) + ')') })">
                   + {{ tDyn('добавить') }}
                 </button>
               </div>
@@ -552,10 +580,10 @@
 
           <button 
             @click="openCallWaiterModal(order)"
-            :disabled="isWaiterLocked"
+            
             style="width: 100%; padding: 14px; color: #111; border: none; border-radius: 12px; font-size: 15px; font-weight: 600; cursor: pointer; transition: all 0.2s;"
-            :style="{ background: isWaiterLocked ? '#d1ffd6' : '#eeeeee', color: isWaiterLocked ? '#10b981' : '#111' }">
-            <span v-if="isWaiterLocked">✓ {{ tDyn('Официант уже в пути') }}</span>
+            :style="{ background: isOrderWaiterLocked(order.id) ? '#d1ffd6' : '#eeeeee', color: isOrderWaiterLocked(order.id) ? '#10b981' : '#111' }">
+            <span v-if="isOrderWaiterLocked(order.id)">✓ {{ tDyn('Официант уже в пути') }}</span>
             <span v-else>{{ tDyn('Позвать официанта') }}</span>
           </button>
 
@@ -916,6 +944,20 @@ const urlRestId = urlParams.get('id'); // Извлекаем ID ресторан
 
 const loadPreviewFromStorage = () => {
   try {
+    // Sync order mode
+    const savedMenuState = localStorage.getItem('menuState');
+    if (savedMenuState) {
+      try {
+        const parsed = JSON.parse(savedMenuState);
+        if (parsed.orderMode) store.orderMode = parsed.orderMode;
+      } catch (e) {}
+    }
+    const savedModeStr = localStorage.getItem('menu_order_mode');
+    if (savedModeStr) {
+      const modeMap = { menu: 'CATALOG', cart: 'CART', order: 'ORDER' };
+      if (modeMap[savedModeStr]) store.orderMode = modeMap[savedModeStr];
+    }
+
     const savedRestaurantInfo = localStorage.getItem('preview_restaurantInfo');
     const savedItems = localStorage.getItem('preview_items');
     const savedCategories = localStorage.getItem('preview_categories');
@@ -962,7 +1004,9 @@ const handleStorageEvent = (event: StorageEvent) => {
     event.key === 'preview_items' || 
     event.key === 'preview_categories' || 
     event.key === 'preview_generalSettings' ||
-    event.key === 'generalSettings'
+    event.key === 'generalSettings' ||
+      event.key === 'menu_order_mode' ||
+      !event.key // For manually dispatched storage events without a key
   ) {
     if (isPreviewMode) {
       loadPreviewFromStorage();
@@ -979,15 +1023,38 @@ const currentCallTable = ref('');
 const currentCallRestaurantId = ref('');
 
 // Retrieve lock timestamp from localStorage
-const storedLock = localStorage.getItem('waiter_lock_until');
-const waiterLockUntil = ref(storedLock ? parseInt(storedLock, 10) : 0);
+  const storedLocks = localStorage.getItem('waiter_locks');
+  const waiterLocks = ref<Record<string, number>>(storedLocks ? JSON.parse(storedLocks) : {});
+  const currentCallSource = ref<string>('global');
 
-const isWaiterLocked = computed(() => {
-  return waiterLockUntil.value > Date.now();
-});
+  const isWaiterLocked = computed(() => {
+    const lockUntil = waiterLocks.value[currentCallSource.value] || 0;
+    return lockUntil > now.value;
+  });
+
+  const isOrderWaiterLocked = (orderId: string) => {
+    return (waiterLocks.value[orderId] || 0) > now.value;
+  };
+
+  const waiterLockRemaining = computed(() => {
+    const lockUntil = waiterLocks.value[currentCallSource.value] || 0;
+    if (lockUntil <= now.value) return '00:00';
+    const diff = Math.floor((lockUntil - now.value) / 1000);
+    const m = Math.floor(diff / 60).toString().padStart(2, '0');
+    const s = (diff % 60).toString().padStart(2, '0');
+    return `${m}:${s}`;
+  });
+
+
+const openCallWaiterModalFromCart = () => {
+    currentCallSource.value = 'global';
+  currentCallTable.value = customerForm.value.tableNumber || '';
+  currentCallRestaurantId.value = (restaurantInfo.value as any).id;
+  showCallWaiterModal.value = true;
+};
 
 const openCallWaiterModal = (order: any) => {
-  if (isWaiterLocked.value) return;
+    currentCallSource.value = order.id;
   currentCallTable.value = order.tableNumber || customerForm.value.tableNumber;
   currentCallRestaurantId.value = order.restaurantId || (restaurantInfo.value as any).id;
   if (!currentCallTable.value) {
@@ -1012,9 +1079,9 @@ const submitWaiterCall = async (callType: string) => {
     });
     
     if (res.ok) {
-      const lockTime = Date.now() + 180000; // 3 minutes
-      waiterLockUntil.value = lockTime;
-      localStorage.setItem('waiter_lock_until', lockTime.toString());
+      const lockTime = Date.now() + 300000; // 5 minutes
+      waiterLocks.value[currentCallSource.value] = lockTime;
+        localStorage.setItem('waiter_locks', JSON.stringify(waiterLocks.value));
       showCallWaiterModal.value = false;
     } else {
       const data = await res.json();
@@ -1027,7 +1094,15 @@ const submitWaiterCall = async (callType: string) => {
 };
 // ------------------------
 
-  onMounted(() => {
+  
+const now = ref(Date.now());
+let timerInterval: any = null;
+
+onMounted(() => {
+  timerInterval = setInterval(() => {
+    now.value = Date.now();
+  }, 1000);
+
   loadClientMenu();
   window.addEventListener('storage', handleStorageEvent);
   
@@ -1049,7 +1124,10 @@ const submitWaiterCall = async (callType: string) => {
 } catch (e) { console.error(e); }
 });
 
+
 onUnmounted(() => {
+  if (timerInterval) clearInterval(timerInterval);
+
   window.removeEventListener('storage', handleStorageEvent);
   if (orderPollInterval) clearInterval(orderPollInterval);
 });
@@ -1418,6 +1496,27 @@ const goToConstructor = () => {
 .close-order-btn:hover { background: #e2e8f0; color: #334155; }
 
 .empty-search-notice { text-align: center; font-size: 10px; margin-top: 25px; color: #888; }
+.floating-waiter-fab {
+  position: absolute;
+  top: 16px;
+  left: 16px;
+  background: white;
+  border: none;
+  border-radius: 50%;
+  width: 44px;
+  height: 44px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  box-shadow: 0 4px 12px rgba(0,0,0,0.15);
+  cursor: pointer;
+  z-index: 100;
+  transition: transform 0.2s;
+}
+.floating-waiter-fab:active {
+  transform: scale(0.95);
+}
+
 .checkout-modal-overlay { position: absolute; top: 0; left: 0; right: 0; bottom: 0; background: rgba(0, 0, 0, 0.6); backdrop-filter: blur(4px); z-index: 100; display: flex; align-items: flex-end; }
 .checkout-modal { background: #f4f5f7; color: #111; width: 100%; max-height: 92%; border-top-left-radius: 20px; border-top-right-radius: 20px; padding: 16px; box-sizing: border-box; overflow-y: auto; animation: slideUp 0.3s ease-out; }
 @keyframes slideUp { from { transform: translateY(100%); } to { transform: translateY(0); } }

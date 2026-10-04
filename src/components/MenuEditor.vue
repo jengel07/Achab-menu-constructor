@@ -214,8 +214,8 @@ const closeModal = () => {
   <div class="menu-editor">
     <div class="toolbar">
       <div class="filter-group" style="flex-direction: column; align-items: stretch; gap: 12px;">
-        <div style="display: flex; gap: 12px; width: 100%;">
-          <div style="position: relative; flex-grow: 1; display: flex; align-items: center;">
+        <div style="display: flex; gap: 12px; width: 100%; flex-wrap: wrap;">
+          <div style="position: relative; flex-grow: 1; display: flex; align-items: center; min-width: 200px;">
             <Search :size="18" stroke-width="2" style="position: absolute; left: 12px; color: var(--text-muted, #888);" />
             <input 
               v-model="searchQuery" 
@@ -226,7 +226,7 @@ const closeModal = () => {
             />
           </div>
           
-          <select v-model="selectedCategoryId" class="category-select">
+          <select v-model="selectedCategoryId" class="category-select" style="flex-grow: 1; min-width: 200px;">
             <option value="all">Все категории</option>
             <option v-for="cat in categories" :key="cat.id" :value="cat.id">
               {{ cat.name }}

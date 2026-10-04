@@ -613,7 +613,7 @@ body {
   backdrop-filter: blur(4px);
   z-index: 2000;
   display: flex;
-  justify-content: flex-start;
+  justify-content: flex-end;
 }
 
 /* Panel */
@@ -625,7 +625,7 @@ body {
   color: #fff;
   display: flex;
   flex-direction: column;
-  box-shadow: 4px 0 24px rgba(0, 0, 0, 0.4);
+  box-shadow: -4px 0 24px rgba(0, 0, 0, 0.4);
   animation: smenu-slide-in 0.22s cubic-bezier(0.4, 0, 0.2, 1);
   overflow: hidden;
 }
@@ -633,11 +633,11 @@ body {
 .smenu-panel.light-theme {
   background: #ffffff;
   color: #1a202c;
-  box-shadow: 4px 0 24px rgba(0, 0, 0, 0.12);
+  box-shadow: -4px 0 24px rgba(0, 0, 0, 0.12);
 }
 
 @keyframes smenu-slide-in {
-  from { transform: translateX(-100%); }
+  from { transform: translateX(100%); }
   to { transform: translateX(0); }
 }
 
@@ -1320,4 +1320,88 @@ body {
   justify-content: center;
   transition: background 0.15s;
 }
-.smenu-btn-delete-forever:hover { background: rgba(239,68,68,0.15); }
+.smenu-btn-delete-forever:hover { background: rgba(239,68,68,0.15); }
+
+
+@media (max-width: 1200px) {
+  .constructor-layout {
+    grid-template-columns: 280px 1fr 0px;
+  }
+  .preview-area {
+    display: none !important;
+  }
+}
+
+@media (max-width: 900px) {
+  .constructor-layout {
+    display: flex;
+    flex-direction: column;
+    height: 100vh;
+  }
+  .sidebar {
+    position: fixed !important;
+    top: 0;
+    left: -320px;
+    bottom: 0;
+    width: 280px;
+    z-index: 3000;
+    transition: left 0.3s ease;
+    box-shadow: 2px 0 12px rgba(0,0,0,0.3);
+  }
+  .sidebar.mobile-open {
+    left: 0;
+  }
+  .mobile-sidebar-backdrop {
+    position: fixed;
+    top: 0; left: 0; right: 0; bottom: 0;
+    background: rgba(0,0,0,0.5);
+    z-index: 2999;
+  }
+  .preview-area {
+    display: none !important;
+  }
+  .editor-area {
+    flex-grow: 1;
+    width: 100%;
+  }
+  .btn-mobile-menu {
+    display: flex !important;
+  }
+  .editor-header {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    padding: 16px;
+  }
+  .editor-content {
+    padding: 16px;
+  }
+}
+
+
+@media (min-width: 901px) {
+  .mobile-only { display: none !important; }
+}
+@media (max-width: 900px) {
+  .desktop-only { display: none !important; }
+  .editor-header {
+    justify-content: space-between; /* To space out Burger, Logo, Avatar */
+  }
+}
+.btn-mobile-avatar {
+  background: transparent;
+  border: none;
+  cursor: pointer;
+  padding: 0;
+  display: flex;
+}
+.btn-mobile-avatar .smenu-avatar {
+  width: 32px;
+  height: 32px;
+  font-size: 14px;
+}
+.sidebar-mobile-close-row {
+  display: flex;
+  justify-content: flex-end;
+  margin-bottom: 12px;
+}

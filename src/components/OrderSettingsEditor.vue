@@ -1,4 +1,4 @@
-<template>
+﻿<template>
   <div class="order-hub-container" :class="{ 'light-theme': isLightTheme }">
 
     <!-- ══ HEADER ══ -->
@@ -44,22 +44,24 @@
                 <div class="order-id-group">
                   <span class="order-id">#{{ order.orderNumber || String(order.id).slice(-4).padStart(4,'0') }}</span>
                   <button class="btn-delete-order" @click="deleteOrder(order.id)" title="Удалить чек" style="background: transparent; border: none; font-size: 16px; cursor: pointer;">🗑️</button>
-                  <button class="btn-delete-order" @click="deleteOrder(order.id)" title="Удалить чек" style="background: transparent; border: none; font-size: 16px; cursor: pointer;">🗑️</button>
                 <span class="order-type-badge" :class="order.type || 'onsite'">
                     {{ getOrderTypeLabel(order.type) }}
                   </span>
                 </div>
-                <span class="order-time">{{ new Date(order.createdAt).toLocaleTimeString('ru-RU', {hour: '2-digit', minute:'2-digit'}) }}</span>
+                <div style="display: flex; flex-direction: column; align-items: flex-end; gap: 4px;">
+                  <span class="order-time">{{ new Date(order.createdAt).toLocaleTimeString('ru-RU', {hour: '2-digit', minute:'2-digit'}) }}</span>
+                  <div class="order-timer-badge">⏱️ {{ getElapsedTime(order) }}</div>
+                </div>
               </div>
               <div class="order-customer-info">
                 <div v-if="order.customerName" class="info-row">
                   <span class="icon">👤</span> {{ order.customerName }} <a v-if="order.customerPhone" :href="`tel:${order.customerPhone}`" class="phone-link">{{ order.customerPhone }}</a>
                 </div>
-                <div class="info-row">
+                <div class="info-row" v-if="order.type === 'delivery' || order.type === 'pickup' || ((order.type === 'onsite' || order.type === 'table') && order.tableNumber)">
                   <span class="icon">📍</span> 
                   <span v-if="order.type === 'delivery'">{{ order.address || 'Адрес не указан' }}</span>
-                  <span v-else-if="order.type === 'table'">Стол {{ order.tableNumber || '?' }}</span>
-                  <span v-else>Самовывоз</span>
+                  <span v-else-if="order.type === 'onsite' || order.type === 'table'">Стол №{{ order.tableNumber }}</span>
+                  <span v-else-if="order.type === 'pickup'">Самовывоз</span>
                 </div>
                 <div v-if="order.comment" class="info-row note">
                   <span class="icon">💬</span> {{ order.comment }}
@@ -180,27 +182,30 @@
             <div class="mode-description-card">
               <div class="mode-card-icon">📄</div>
               <h3>Принятие заказов</h3>
-              <p>Принимай заказы клиентов прямо в Dashboard. Быстрый и простой способ увеличить выручку.</p>
+              <p>Принимай заказы клиентов прямо в Achab QrMenu и через Telegram-бота. Быстрый и простой способ увеличить выручку без лишних заморочек.</p>
             </div>
             <div class="mode-description-card warning-card">
               <div class="checkbox-row">
                 <input type="checkbox" id="liability" v-model="isLiabilityAgreed" />
-                <label for="liability">Я понимаю, что сервис предоставляет инструмент для заказов, но я несу полную
-                  ответственность за выполнение заказов и потерянные уведомления.</label>
+                <label for="liability">Я понимаю, что Achab QrMenu предоставляет инструмент для приёма заказов, но я несу полную ответственность за их выполнение. Achab QrMenu не несёт ответственности за потерянные заказы, пропущенные уведомления или связанные потери выручки.</label>
               </div>
             </div>
             <div class="modal-footer-actions">
               <button class="btn-cancel" @click="isOrderSettingsOpen = false">Отмена</button>
-              <button class="btn-activate" :disabled="!isLiabilityAgreed" @click="activateOrdering">
-                Активировать заказы ➔
-              </button>
+              <button class="btn-activate" :disabled="!isLiabilityAgreed" @click="activateOrdering">Активировать заказы</button>
             </div>
           </template>
 
           <!-- Step 2 — full settings -->
           <template v-else>
             <div class="activated-settings-scroll">
-              <p class="order-top-text">Принимай заказы клиентов прямо в Dashboard и по email.</p>
+              <div class="mode-description-card" style="margin-bottom: 20px;">
+                  <div class="mode-card-icon">🛎️</div>
+                  <h3>Заказы</h3>
+                  <p>Принимай заказы клиентов прямо в Achab QrMenu и через Telegram-бота. Быстрый и простой способ увеличить выручку без лишних заморочек.</p>
+                  <div v-if="currentMode === 'order'" class="mode-active-badge">✓ Активный режим</div>
+                  <button v-else class="btn-set-mode" @click="applyMode('order')">Включить этот режим</button>
+                </div>
 
               <!-- Самовывоз -->
               <div class="setting-block">
@@ -251,10 +256,13 @@
                     </div>
                     <div class="input-group"><label>Бесплатно от</label>
                       <div class="input-with-unit"><input type="number" v-model.number="freeFrom" class="text-input"
-                          @blur="saveSettings" /><span>₽</span></div>
-                    </div>
-                  </div>
-                </template>
+                          @blur="saveSettings" /><span>₽</span>        </div>
+      </div>
+    </div>
+    <div v-if="showToast" class="toast-notification">
+      <CheckCircle :size="16" /> Режим работы успешно сохранен
+    </div>
+  </template>
               </div>
 
               <!-- На месте -->
@@ -341,11 +349,14 @@
 
 <script setup lang="ts">
 import { ref, computed, onMounted, onUnmounted } from 'vue';
+import { useMenuStore } from '../store/menuStore';
+import { CheckCircle } from 'lucide-vue-next';
 import type { RestaurantInfo } from '../types/menu';
 import { ordersApi } from '../api';
 
 const props = defineProps<{ modelValue: RestaurantInfo }>();
 const emit = defineEmits(['update:modelValue']);
+const menuStore = useMenuStore();
 
 const isLightTheme = computed(() => {
   return typeof document !== 'undefined' &&
@@ -383,7 +394,12 @@ const _saved = (props.modelValue as any).orderSettings || _loadSettings();
 // ═══════════════════════════════════════════════════════
 // ORDER MODE (controls ClientView behaviour)
 // ═══════════════════════════════════════════════════════
-const currentMode = ref<'menu' | 'cart' | 'order'>(_saved.currentMode || 'order');
+const currentMode = ref<'menu' | 'cart' | 'order'>(
+  menuStore.orderMode === 'CATALOG' ? 'menu' : 
+  menuStore.orderMode === 'CART' ? 'cart' : 
+  menuStore.orderMode === 'ORDER' ? 'order' : 
+  (_saved.currentMode || 'order')
+);
 const orderMode = ref<string>(_saved.currentMode || 'order');
 
 const modePillLabel = computed(() => ({
@@ -392,9 +408,21 @@ const modePillLabel = computed(() => ({
   order: '📄 Приём заказов',
 }[currentMode.value]));
 
-const applyMode = (mode: 'menu' | 'cart' | 'order') => {
+const showToast = ref(false);
+const applyMode = async (mode: 'menu' | 'cart' | 'order') => {
   currentMode.value = mode;
   saveSettings();
+  
+  const modeMap = { menu: 'CATALOG', cart: 'CART', order: 'ORDER' };
+  menuStore.orderMode = modeMap[mode];
+  
+  try {
+    await menuStore.syncToServer();
+    showToast.value = true;
+    setTimeout(() => { showToast.value = false; }, 3000);
+  } catch (err) {
+    console.error('Failed to save mode', err);
+  }
 };
 
 // ═══════════════════════════════════════════════════════
@@ -722,7 +750,7 @@ const manualSave = () => {
 .hub-counters { display: flex; gap: 8px; align-items: center; flex-wrap: wrap; }
 
 .counter-badge {
-  background: #262626;
+  background: #f3f4f6;
   border: 1px solid #333;
   color: #a0aec0;
   display: flex;
@@ -752,7 +780,7 @@ const manualSave = () => {
   text-align: center;
 }
 
-.hub-actions { display: flex; gap: 10px; align-items: center; }
+.hub-actions { display: flex; gap: 10px; align-items: center; flex-wrap: wrap; }
 
 .hub-mode-pill {
   font-size: 11px;
@@ -900,16 +928,17 @@ const manualSave = () => {
 /* ── Modal ── */
 .modal-overlay { position: fixed; inset: 0; background: rgba(0,0,0,0.7); display: flex; justify-content: center; align-items: center; z-index: 1000; }
 .modal-content.order-settings-modal {
-  background: #1a1a1a;
-  color: #f3f4f6;
+  background: #ffffff;
+  color: #111827;
   width: 100%;
   max-width: 520px;
   max-height: 90vh;
-  padding: 24px;
-  border-radius: 16px;
+  border-radius: 20px;
   display: flex;
   flex-direction: column;
-  border: 1px solid #2d2d2d;
+  padding: 24px;
+  box-shadow: 0 10px 40px rgba(0,0,0,0.2);
+  overflow: hidden;
 }
 .modal-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px; }
 .modal-header h2 { font-size: 18px; font-weight: 700; margin: 0; }
@@ -917,22 +946,15 @@ const manualSave = () => {
 .close-btn:hover { color: #fff; }
 
 /* Mode tabs */
-.mode-tabs { display: flex; background: #262626; padding: 4px; border-radius: 12px; margin-bottom: 20px; gap: 2px; }
+.mode-tabs { display: flex; background: #f3f4f6; padding: 4px; border-radius: 12px; margin-bottom: 20px; gap: 2px; }
 .mode-tabs button { flex: 1; background: transparent; border: none; padding: 10px; font-size: 14px; color: #6b7280; border-radius: 8px; cursor: pointer; font-weight: 600; transition: all 0.15s; }
-.mode-tabs button.active { background: #374151; color: #fff; box-shadow: 0 2px 6px rgba(0,0,0,0.3); }
+.mode-tabs button.active { background: #ffffff; color: #111827; box-shadow: 0 1px 3px rgba(0,0,0,0.1); }
 
 /* Mode description cards */
-.mode-description-card {
-  background: #262626;
-  border: 1px solid #333;
-  border-radius: 12px;
-  padding: 20px;
-  text-align: center;
-  margin-bottom: 16px;
-}
+.mode-description-card { background: #f9fafb; border: 1px solid #e5e7eb; border-radius: 12px; padding: 20px; text-align: center; margin-bottom: 16px; }
 .mode-card-icon { font-size: 36px; margin-bottom: 10px; }
 .mode-description-card h3 { font-size: 16px; font-weight: 700; margin: 0 0 8px; }
-.mode-description-card p { font-size: 13px; color: #9ca3af; line-height: 1.5; margin: 0 0 14px; }
+.mode-description-card p { font-size: 13px; color: #6b7280; line-height: 1.5; margin: 0 0 14px; }
 .mode-active-badge {
   display: inline-block;
   background: rgba(16,185,129,0.15);
@@ -964,7 +986,7 @@ const manualSave = () => {
 
 /* Modal footer */
 .modal-footer-actions { display: flex; gap: 10px; justify-content: flex-end; margin-top: 16px; }
-.btn-cancel { background: #374151; color: #9ca3af; border: none; padding: 10px 20px; border-radius: 8px; cursor: pointer; font-size: 14px; }
+.btn-cancel { background: #f3f4f6; color: #374151; border: none; padding: 10px 20px; border-radius: 8px; cursor: pointer; font-size: 14px; }
 .btn-activate { background: #9D0D0E; color: #fff; border: none; padding: 10px 20px; border-radius: 8px; cursor: pointer; font-size: 14px; font-weight: 700; transition: background 0.15s; }
 .btn-activate:disabled { opacity: 0.4; cursor: not-allowed; }
 .btn-activate:not(:disabled):hover { background: #521926; }
@@ -973,32 +995,32 @@ const manualSave = () => {
 
 /* Activated settings */
 .activated-settings-scroll { overflow-y: auto; max-height: 60vh; padding-right: 4px; display: flex; flex-direction: column; gap: 0; }
-.order-top-text { font-size: 13px; color: #9ca3af; margin-bottom: 16px; line-height: 1.5; }
-.setting-block { background: #222225; border: 1px solid #2d2d2d; padding: 16px; border-radius: 12px; margin-bottom: 12px; }
+.order-top-text { font-size: 13px; color: #6b7280; margin-bottom: 16px; line-height: 1.5; }
+.setting-block { background: #ffffff; border: 1px solid #e5e7eb; padding: 16px; border-radius: 12px; margin-bottom: 12px; }
 .setting-label-with-icon { display: flex; align-items: center; gap: 10px; font-weight: 600; font-size: 15px; }
 .block-icon { font-size: 18px; }
 .setting-row-switch { display: flex; justify-content: space-between; align-items: center; }
 .status-text { display: block; font-size: 12px; color: #6b7280; margin: 6px 0 10px; }
 .range-group { margin: 12px 0; }
-.range-label { display: flex; justify-content: space-between; font-size: 13px; color: #9ca3af; margin-bottom: 8px; }
+.range-label { display: flex; justify-content: space-between; font-size: 13px; color: #4b5563; margin-bottom: 8px; }
 .highlight-orange { color: #f97316; font-weight: 700; }
 .range-input { width: 100%; accent-color: #f97316; }
-.text-input { padding: 8px 12px; border: 1px solid #3f3f46; border-radius: 8px; font-size: 14px; outline: none; width: 100%; background: #27272a; color: #f3f4f6; transition: border-color 0.2s; box-sizing: border-box; }
+.text-input { width: 100%; background: #f9fafb; border: 1px solid #d1d5db; color: #111827; padding: 10px; border-radius: 8px; font-size: 14px; outline: none; transition: border 0.15s; }
 .text-input:focus { border-color: #9D0D0E; }
 .input-with-unit { display: flex; align-items: center; border: 1px solid #3f3f46; border-radius: 8px; background: #27272a; overflow: hidden; }
 .input-with-unit span { padding: 0 10px; font-size: 12px; color: #6b7280; background: #323238; height: 100%; display: flex; align-items: center; flex-shrink: 0; }
 .input-with-unit input { border: none; background: transparent; color: #f3f4f6; width: 100%; padding: 8px; outline: none; }
 .input-group { display: flex; flex-direction: column; gap: 5px; margin-top: 10px; }
-.input-group label { font-size: 12px; color: #6b7280; font-weight: 600; }
+.input-group label { display: block; font-size: 12px; color: #4b5563; margin-bottom: 6px; font-weight: 500; }
 .row-inputs-three { display: flex; gap: 8px; }
 .row-inputs-three .input-group { flex: 1; }
-.work-day-row { display: flex; justify-content: space-between; align-items: center; padding: 7px 0; border-bottom: 1px solid #2d2d2d; font-size: 13px; }
+.work-day-row { display: flex; justify-content: space-between; align-items: center; padding: 7px 0; border-bottom: 1px solid #e5e7eb; font-size: 13px; color: #111827; }
 .work-day-row:last-child { border-bottom: none; }
 .day-switch-left { display: flex; align-items: center; gap: 10px; }
 .day-action-right { font-size: 12px; color: #6b7280; }
-.notification-tabs { display: flex; background: #262626; padding: 3px; border-radius: 8px; gap: 3px; }
-.notification-tabs button { flex: 1; background: transparent; border: none; padding: 8px; font-size: 13px; color: #6b7280; border-radius: 6px; cursor: pointer; font-weight: 600; }
-.notification-tabs button.active { background: #374151; color: #fff; }
+.notification-tabs { display: flex; background: #f3f4f6; padding: 3px; border-radius: 8px; gap: 3px; }
+.notification-tabs button { flex: 1; padding: 8px; background: transparent; border: none; color: #6b7280; font-size: 13px; font-weight: 600; cursor: pointer; border-radius: 6px; transition: background 0.15s; }
+.notification-tabs button.active { background: #e5e7eb; color: #111827; }
 .phone-input-wrapper { display: flex; align-items: center; border: 1px solid #3f3f46; border-radius: 8px; overflow: hidden; background: #27272a; }
 .country-select { padding: 0 10px; background: #323238; border-right: 1px solid #3f3f46; font-size: 16px; height: 100%; display: flex; align-items: center; }
 .phone-input { border: none !important; border-radius: 0 !important; }
@@ -1028,4 +1050,26 @@ input:checked + .slider:before { transform: translateX(20px); }
 .order-hub-container.light-theme .btn-action-top { background: #fff; border-color: #cbd5e1; color: #334155; }
 .order-hub-container.light-theme .hub-loading { color: #94a3b8; }
 .order-hub-container.light-theme .no-orders-placeholder { color: #64748b; }
+</style>
+<style scoped>
+.toast-notification {
+  position: fixed;
+  bottom: 20px;
+  right: 20px;
+  background: #10b981;
+  color: white;
+  padding: 12px 20px;
+  border-radius: 8px;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  font-weight: 600;
+  box-shadow: 0 4px 12px rgba(16, 185, 129, 0.3);
+  z-index: 10000;
+  animation: slideInUp 0.3s ease;
+}
+@keyframes slideInUp {
+  from { transform: translateY(20px); opacity: 0; }
+  to { transform: translateY(0); opacity: 1; }
+}
 </style>

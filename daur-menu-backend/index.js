@@ -235,14 +235,19 @@ app.post('/api/auth/register', async (req, res) => {
     // Хэшируем пароль
     const hashedPassword = await bcrypt.hash(password, SALT_ROUNDS);
 
-    const newRestaurant = await db.restaurant.create({
-      data: {
-        email,
-        password: hashedPassword,
-        name: name || email.split('@')[0],
-        menus: { create: {} },
-      },
-    });
+    const trialEndsAt = new Date();
+      trialEndsAt.setDate(trialEndsAt.getDate() + 3); // 3 days default trial
+      const newRestaurant = await db.restaurant.create({
+        data: {
+          email,
+          password: hashedPassword,
+          name: name || email.split('@')[0],
+          status: 'TRIAL',
+          paymentStatus: 'trial',
+          trialEndsAt: trialEndsAt,
+          menus: { create: {} },
+        },
+      });
 
     const token = jwt.sign(
       { restaurantId: newRestaurant.id, email: newRestaurant.email },
@@ -491,6 +496,8 @@ app.get('/api/menu', async (req, res) => {
       categories: menuRecord?.cats ? JSON.parse(menuRecord.cats) : [],
       items: dishRecords.length > 0 ? dishRecords : (menuRecord?.items ? JSON.parse(menuRecord.items) : []),
       generalSettings: menuRecord?.general_settings ? JSON.parse(menuRecord.general_settings) : {},
+        orderMode: menuRecord?.orderMode || 'ORDER',
+        orderMode: menuRecord?.orderMode || 'ORDER',
     });
   } catch (err) {
     console.error('❌ Ошибка чтения публичного меню:', err.message);
@@ -537,7 +544,7 @@ app.post('/api/menu/:restaurantId', authMiddleware, adminOnly, async (req, res) 
     return res.status(403).json({ error: 'Доступ запрещён' });
   }
 
-  const { info, items, cats, generalSettings } = req.body;
+  const { info, items, cats, generalSettings, orderMode } = req.body;
   const restaurantId = req.params.restaurantId;
 
     try {
@@ -548,6 +555,7 @@ app.post('/api/menu/:restaurantId', authMiddleware, adminOnly, async (req, res) 
       if (info !== undefined) menuUpdateData.info = JSON.stringify(info || {});
       if (cats !== undefined) menuUpdateData.cats = JSON.stringify(cats || []);
       if (generalSettings !== undefined) menuUpdateData.general_settings = JSON.stringify(generalSettings || {});
+      if (orderMode !== undefined) menuUpdateData.orderMode = orderMode;
 
       if (info && info.orderSettings) {
         await tx.restaurant.update({

@@ -1,4 +1,4 @@
-<template>
+﻿<template>
   <div>
     <!-- Нижняя панель настроек -->
     <div class="floating-settings-bar" :style="{ backgroundColor: primaryColor || secondaryColor || '#9D0D0E' }">
@@ -52,7 +52,8 @@
           <span>{{ tDyn('Итого:') }}</span>
           <span>{{ totalPrice.toFixed(2) }} ₽</span>
         </div>
-        <button class="show-results-btn" :style="{ backgroundColor: primaryColor || '#9D0D0E', color: '#fff' }" @click="$emit('checkout')">{{ tDyn('Оформить заказ') }}</button>
+        <button v-if="store.orderMode === 'CART'" class="show-results-btn" :style="{ backgroundColor: primaryColor || '#9D0D0E', color: '#fff' }" @click="$emit('call-waiter')">{{ tDyn('Позвать официанта') }}</button>
+        <button v-else class="show-results-btn" :style="{ backgroundColor: primaryColor || '#9D0D0E', color: '#fff' }" @click="$emit('checkout')">{{ tDyn('Оформить заказ') }}</button>
       </div>
     </div>
 
@@ -210,11 +211,14 @@
 
 <script setup lang="ts">
 import { ref } from 'vue';
+import { useMenuStore } from '../store/menuStore';
 import { 
   Languages, SlidersHorizontal, Share2, LayoutGrid, List, Search, Square, 
   Send, PhoneCall, Instagram, Facebook, Globe, Mail, Copy 
 } from 'lucide-vue-next';
 import LanguageModal from './LanguageModal.vue';
+
+const store = useMenuStore();
 
 export interface Props {
   activeModal: string;
@@ -239,7 +243,7 @@ const props = withDefaults(defineProps<Props>(), {
 
 const emit = defineEmits([
   'open', 'close', 'toggle-view', 'select-lang', 'clear-cart', 
-  'increase', 'decrease', 'checkout', 'toggle-filter', 'clear-filters', 'update:searchQuery'
+  'increase', 'decrease', 'checkout', 'call-waiter', 'toggle-filter', 'clear-filters', 'update:searchQuery'
 ]);
 
 const fullShareUrl = window.location.href;

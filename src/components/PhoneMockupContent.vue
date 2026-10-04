@@ -120,12 +120,12 @@
                           </span>
                           
                           <div v-if="!item.priceBottle && !item.priceGlass">
-                            <div v-if="getItemQuantity(item.id) > 0" class="counter-controls" :style="{ borderColor: currentRestaurantInfo.primaryColor || '#9D0D0E' }">
+                            <div v-if="getItemQuantity(item.id) > 0 && store.orderMode !== 'CATALOG'" class="counter-controls" :style="{ borderColor: currentRestaurantInfo.primaryColor || '#9D0D0E' }">
                               <button class="counter-btn" @click="decreaseQuantity(item.id)">-</button>
                               <span class="counter-value">{{ getItemQuantity(item.id) }}</span>
                               <button class="counter-btn" @click="increaseQuantity(item.id)">+</button>
                             </div>
-                            <button v-else class="add-to-cart-btn" :style="{ backgroundColor: currentRestaurantInfo.primaryColor || '#9D0D0E', width: '100%', padding: '6px 12px' }" @click="item.modifiers && item.modifiers.length > 0 ? modifierItem = item : addToCart(item)">+ {{ item.modifiers && item.modifiers.length > 0 ? tDyn('опции') : tDyn('добавить') }}</button>
+                            <button v-else-if="store.orderMode !== 'CATALOG'" class="add-to-cart-btn" :style="{ backgroundColor: currentRestaurantInfo.primaryColor || '#9D0D0E', width: '100%', padding: '6px 12px' }" @click="item.modifiers && item.modifiers.length > 0 ? modifierItem = item : addToCart(item)">+ {{ item.modifiers && item.modifiers.length > 0 ? tDyn('опции') : tDyn('добавить') }}</button>
                           </div>
                         </div>
                       </div>
@@ -160,7 +160,30 @@
                 @update:searchQuery="(val: string) => searchQuery = val"
               />
 
-              <div v-if="cartItems.length > 0 && activeModal !== 'cart'" class="floating-cart-bar" @click="activeModal = 'cart'" :style="{ backgroundColor: currentRestaurantInfo.primaryColor || '#10b981', zIndex: 20 }">
+              
+<button v-if="activeModal !== 'cart'"
+            class="floating-waiter-fab" 
+  @click="handleWaiter"
+  :style="{ 
+    color: currentRestaurantInfo.primaryColor || '#10b981',
+    position: 'absolute',
+    top: '16px',
+    right: '16px',
+    width: '44px',
+    height: '44px',
+    borderRadius: '50%',
+    backgroundColor: '#ffffff',
+    display: 'flex',
+    justifyContent: 'center',
+    alignItems: 'center',
+    boxShadow: '0 4px 12px rgba(0, 0, 0, 0.15)',
+    cursor: 'pointer',
+    zIndex: 9999,
+    border: 'none'
+  }">
+  <ConciergeBell :size="24" />
+</button>
+<div v-if="cartItems.length > 0 && activeModal !== 'cart'" class="floating-cart-bar" @click="activeModal = 'cart'" :style="{ backgroundColor: currentRestaurantInfo.primaryColor || '#10b981', zIndex: 20 }">
                 <span class="cart-title">{{ tDyn('Посмотреть корзину') }}</span>
                 <span class="cart-total">{{ totalPrice.toFixed(2) }} ₽</span>
               </div>
@@ -287,12 +310,12 @@
                       </span>
                       
                       <div v-if="!item.priceBottle && !item.priceGlass">
-                        <div v-if="getItemQuantity(item.id) > 0" class="counter-controls" :style="{ borderColor: currentRestaurantInfo.primaryColor || '#9D0D0E' }">
+                        <div v-if="getItemQuantity(item.id) > 0 && store.orderMode !== 'CATALOG'" class="counter-controls" :style="{ borderColor: currentRestaurantInfo.primaryColor || '#9D0D0E' }">
                           <button class="counter-btn" @click="decreaseQuantity(item.id)">-</button>
                           <span class="counter-value">{{ getItemQuantity(item.id) }}</span>
                           <button class="counter-btn" @click="increaseQuantity(item.id)">+</button>
                         </div>
-                        <button v-else class="add-to-cart-btn" :style="{ backgroundColor: currentRestaurantInfo.primaryColor || '#9D0D0E', width: '100%', padding: '6px 12px' }" @click="item.modifiers && item.modifiers.length > 0 ? modifierItem = item : addToCart(item)">+ {{ item.modifiers && item.modifiers.length > 0 ? tDyn('опции') : tDyn('добавить') }}</button>
+                        <button v-else-if="store.orderMode !== 'CATALOG'" class="add-to-cart-btn" :style="{ backgroundColor: currentRestaurantInfo.primaryColor || '#9D0D0E', width: '100%', padding: '6px 12px' }" @click="item.modifiers && item.modifiers.length > 0 ? modifierItem = item : addToCart(item)">+ {{ item.modifiers && item.modifiers.length > 0 ? tDyn('опции') : tDyn('добавить') }}</button>
                       </div>
                     </div>
                   </div>
@@ -327,14 +350,53 @@
             @update:searchQuery="(val: string) => searchQuery = val"
           />
 
-          <div v-if="cartItems.length > 0 && activeModal !== 'cart'" class="floating-cart-bar" @click="activeModal = 'cart'" :style="{ backgroundColor: currentRestaurantInfo.primaryColor || '#10b981', zIndex: 20 }">
+          
+<button v-if="activeModal !== 'cart'"
+            class="floating-waiter-fab" 
+  @click="handleWaiter"
+  :style="{ 
+    color: currentRestaurantInfo.primaryColor || '#10b981',
+    position: 'absolute',
+    top: '16px',
+    right: '16px',
+    width: '44px',
+    height: '44px',
+    borderRadius: '50%',
+    backgroundColor: '#ffffff',
+    display: 'flex',
+    justifyContent: 'center',
+    alignItems: 'center',
+    boxShadow: '0 4px 12px rgba(0, 0, 0, 0.15)',
+    cursor: 'pointer',
+    zIndex: 9999,
+    border: 'none'
+  }">
+  <ConciergeBell :size="24" />
+</button>
+<div v-if="cartItems.length > 0 && activeModal !== 'cart'" class="floating-cart-bar" @click="activeModal = 'cart'" :style="{ backgroundColor: currentRestaurantInfo.primaryColor || '#10b981', zIndex: 20 }">
             <span class="cart-title">{{ tDyn('Посмотреть корзину') }}</span>
             <span class="cart-total">{{ totalPrice.toFixed(2) }} ₽</span>
           </div>
         </template>
 
         <!-- ЭКРАН КОРЗИНЫ -->
-        <template v-else-if="currentScreen === 'cart'">
+        
+          <!-- WAITER CALL MODAL -->
+          <div v-if="showCallWaiterModal" class="bottom-sheet-overlay" @click.self="showCallWaiterModal = false" style="position: absolute; top:0; left:0; width:100%; height:100%; background:rgba(0,0,0,0.5); z-index: 10000; display:flex; flex-direction:column; justify-content:flex-end;">
+            <div class="bottom-sheet" style="background: white; padding: 24px; border-radius: 20px 20px 0 0; color: #111;">
+              <div style="width: 40px; height: 4px; background: #e0e0e0; border-radius: 2px; margin: 0 auto 16px;"></div>
+              <h3 style="margin: 0 0 16px 0; font-size: 18px; text-align: center;">{{ tDyn ? tDyn('Позвать официанта') : 'Позвать официанта' }}</h3>
+              
+              <div style="display: flex; flex-direction: column; gap: 8px;">
+                <button @click="submitWaiterCall('Подойдите ко мне (счет)')" class="waiter-option-btn" style="background:#f4f4f5; padding:12px; border-radius:12px; border:none; font-weight:600;">💸 {{ tDyn ? tDyn('Подойдите ко мне (счет)') : 'Подойдите ко мне (счет)' }}</button>
+                <button @click="submitWaiterCall('Подойдите ко мне (с меню)')" class="waiter-option-btn" style="background:#f4f4f5; padding:12px; border-radius:12px; border:none; font-weight:600;">📖 {{ tDyn ? tDyn('Подойдите ко мне (с меню)') : 'Подойдите ко мне (с меню)' }}</button>
+                <button @click="submitWaiterCall('Зову кальянщика')" class="waiter-option-btn" style="background:#f4f4f5; padding:12px; border-radius:12px; border:none; font-weight:600;">💨 {{ tDyn ? tDyn('Зову кальянщика') : 'Зову кальянщика' }}</button>
+                <button @click="submitWaiterCall('Просто так')" class="waiter-option-btn" style="background:#f4f4f5; padding:12px; border-radius:12px; border:none; font-weight:600;">👋 {{ tDyn ? tDyn('Просто так') : 'Просто так' }}</button>
+              </div>
+            </div>
+          </div>
+          
+          <template v-else-if="currentScreen === 'cart'">
           <div class="cart-screen-header">
             <button class="cart-close-btn" @click="currentScreen = 'menu'">✕</button>
             <h2>{{ t('cartHeader') }}</h2>
@@ -391,7 +453,8 @@
 
 <script setup lang="ts">
 import ClientModifiersModal from './ClientModifiersModal.vue';
-import { ref, computed, reactive } from 'vue';
+import { ref, computed, reactive } from 'vue'; 
+import { useMenuStore } from '../store/menuStore';
 
 const computedRestaurantId = computed(() => {
   try {
@@ -405,8 +468,60 @@ import QrcodeVue from 'qrcode.vue';
 import PromoBanners from './client/PromoBanners.vue';
 
 import SettingsbarForClient from './SettingsbarForClient.vue';
+import { ConciergeBell } from 'lucide-vue-next';
 
 
+
+
+
+
+const showCallWaiterModal = ref(false);
+const currentCallTable = ref('');
+
+const handleWaiter = () => {
+  if (isWaiterLocked.value) {
+    alert(tDyn ? tDyn('Подождите немного перед следующим вызовом.') : 'Подождите немного перед следующим вызовом.');
+    return;
+  }
+  const tableNum = prompt(tDyn ? tDyn('Ваш столик:') : 'Ваш столик:');
+  if (tableNum) {
+    currentCallTable.value = tableNum;
+    showCallWaiterModal.value = true;
+  }
+};
+
+const waiterLockUntil = ref(parseInt(localStorage.getItem('waiter_lock_until') || '0'));
+const isWaiterLocked = computed(() => waiterLockUntil.value > Date.now());
+
+const submitWaiterCall = async (callType: string) => {
+  if (isWaiterLocked.value) return;
+  
+  try {
+    const API_URL = (import.meta as any).env.VITE_API_URL || '';
+    const res = await fetch(`${API_URL}/api/call-waiter`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({
+        restaurantId: computedRestaurantId.value,
+        tableNumber: currentCallTable.value,
+        callType
+      })
+    });
+    
+    if (res.ok) {
+      const lockTime = Date.now() + 180000;
+      waiterLockUntil.value = lockTime;
+      localStorage.setItem('waiter_lock_until', lockTime.toString());
+      showCallWaiterModal.value = false;
+      alert('Уведомление отправлено!');
+    } else {
+      alert('Ошибка при вызове');
+    }
+  } catch (err) {
+    console.error(err);
+    alert('Ошибка при вызове');
+  }
+};
 
 
 const handleCheckout = () => {
@@ -417,7 +532,8 @@ const handleCheckout = () => {
   alert('Заказ успешно оформлен и отправлен в дашборд!');
 };
 
-const props = defineProps<{
+const store = useMenuStore();
+  const props = defineProps<{
   restaurantInfo?: any;
   items?: any[];
   categories?: any[];
@@ -790,6 +906,23 @@ const openPreview = () => {
 .close-fullscreen-btn { background: #ff4d4f; color: white; border: none; padding: 6px 12px; border-radius: 6px; cursor: pointer; font-size: 14px; }
 .fullscreen-phone-wrapper { flex: 1; display: flex; align-items: center; justify-content: center; padding-bottom: 20px; }
 .phone-mockup.fullscreen-mode { transform: scale(1.1); }
+
+.floating-waiter-fab {
+  position: absolute;
+  top: 16px;
+  left: 16px;
+  width: 44px;
+  height: 44px;
+  border-radius: 50%;
+  background: #ffffff;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+  cursor: pointer;
+  z-index: 100;
+  border: none;
+}
 .floating-cart-bar { position: absolute; bottom: calc(12px + 45px + 4px); left: 12px; right: 12px; color: white; border-radius: 24px; padding: 10px 16px; display: flex; justify-content: space-between; align-items: center; font-size: 11px; font-weight: bold; cursor: pointer; z-index: 20; box-shadow: 0 4px 15px rgba(0,0,0,0.4); box-sizing: border-box; }
 .menu-items-full-phone { display: flex; flex-direction: column; gap: 12px; padding: 0 16px 100px; }
 .menu-card-full {
