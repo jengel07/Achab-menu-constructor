@@ -34,12 +34,6 @@ const banners = ref<any[]>([]);
 const carousel = ref<HTMLElement | null>(null);
 const currentIndex = ref(0);
 
-const handleScroll = () => {
-  if (!carousel.value) return;
-  const scrollLeft = carousel.value.scrollLeft;
-  const width = carousel.value.offsetWidth;
-  currentIndex.value = Math.round(scrollLeft / width);
-};
 
 const fetchBanners = async () => {
   if (!props.restaurantId) return;

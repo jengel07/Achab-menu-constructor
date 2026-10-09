@@ -1,9 +1,9 @@
 const fs = require('fs');
-let code = fs.readFileSync('daur-menu-backend/index.js', 'utf8');
-code = code.replace(
-  'modifiers: dish.modifiers ? JSON.stringify(dish.modifiers) : null',
-  'modifiers: dish.modifiers || null'
-);
-fs.writeFileSync('daur-menu-backend/index.js', code);
-console.log('Fixed modifiers in index.js');
+let file = fs.readFileSync('src/components/ModifiersEditor.vue', 'utf8');
 
+file = file.replace(/const removeOption = \(gIdx: number, oIdx: number\) =>/g, 'const removeOption = (gIdx: any, oIdx: any) =>');
+file = file.replace(/const addOption = \(gIdx: number\) =>/g, 'const addOption = (gIdx: any) =>');
+file = file.replace(/const removeGroup = \(idx: number\) =>/g, 'const removeGroup = (idx: any) =>');
+
+fs.writeFileSync('src/components/ModifiersEditor.vue', file);
+console.log('Fixed ModifiersEditor.vue typing');

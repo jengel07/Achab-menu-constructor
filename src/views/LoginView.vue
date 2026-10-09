@@ -237,8 +237,8 @@ const handleSubmit = async () => {
 
 const checkAutoLogin = () => {
   if (route.query.email && route.query.password) {
-    email.value = Array.isArray(route.query.email) ? route.query.email[0] : route.query.email;
-    password.value = Array.isArray(route.query.password) ? route.query.password[0] : route.query.password;
+    email.value = (Array.isArray(route.query.email) ? route.query.email[0] : route.query.email) || '';
+    password.value = (Array.isArray(route.query.password) ? route.query.password[0] : route.query.password) || '';
     
     // Clear query so it doesn't loop
     const query = { ...route.query };

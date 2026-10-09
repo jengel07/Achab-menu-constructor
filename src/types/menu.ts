@@ -14,6 +14,7 @@ export interface MenuItem {
   glutenFree?: boolean;
   vegetarian?: boolean;
   vegan?: boolean;
+  modifiers?: any[];
 }
 
 export interface MenuCategory {
@@ -50,6 +51,7 @@ export interface RestaurantInfo {
   showCoverGradient?: boolean; 
   isDarkMode?: boolean;
   isWifiEnabled?: boolean;
+  filterSettings?: Record<string, boolean>;
   
 }
 

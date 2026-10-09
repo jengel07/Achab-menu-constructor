@@ -186,6 +186,9 @@ body {
 .editor-header {
   padding: 20px;
   border-bottom: 1px solid var(--border-color);
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
 }
 
 .tab-title {
@@ -613,7 +616,7 @@ body {
   backdrop-filter: blur(4px);
   z-index: 2000;
   display: flex;
-  justify-content: flex-end;
+  justify-content: flex-start;
 }
 
 /* Panel */
@@ -625,18 +628,23 @@ body {
   color: #fff;
   display: flex;
   flex-direction: column;
-  box-shadow: -4px 0 24px rgba(0, 0, 0, 0.4);
-  animation: smenu-slide-in 0.22s cubic-bezier(0.4, 0, 0.2, 1);
+  box-shadow: 4px 0 24px rgba(0, 0, 0, 0.4);
+  animation: smenu-slide-in-desktop 0.22s cubic-bezier(0.4, 0, 0.2, 1);
   overflow: hidden;
 }
 
 .smenu-panel.light-theme {
   background: #ffffff;
   color: #1a202c;
-  box-shadow: -4px 0 24px rgba(0, 0, 0, 0.12);
+  box-shadow: 4px 0 24px rgba(0, 0, 0, 0.12);
 }
 
-@keyframes smenu-slide-in {
+@keyframes smenu-slide-in-desktop {
+  from { transform: translateX(-100%); }
+  to { transform: translateX(0); }
+}
+
+@keyframes smenu-slide-in-mobile {
   from { transform: translateX(100%); }
   to { transform: translateX(0); }
 }
@@ -1333,6 +1341,8 @@ body {
 }
 
 @media (max-width: 900px) {
+  .smenu-overlay { justify-content: flex-end; }
+  .smenu-panel { animation: smenu-slide-in-mobile 0.22s cubic-bezier(0.4, 0, 0.2, 1); }
   .constructor-layout {
     display: flex;
     flex-direction: column;
@@ -1383,6 +1393,8 @@ body {
   .mobile-only { display: none !important; }
 }
 @media (max-width: 900px) {
+  .smenu-overlay { justify-content: flex-end; }
+  .smenu-panel { animation: smenu-slide-in-mobile 0.22s cubic-bezier(0.4, 0, 0.2, 1); }
   .desktop-only { display: none !important; }
   .editor-header {
     justify-content: space-between; /* To space out Burger, Logo, Avatar */

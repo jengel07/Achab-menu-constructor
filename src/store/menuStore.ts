@@ -289,6 +289,7 @@ export const useMenuStore = defineStore('menu', () => {
     restoreItem,
     permanentlyDeleteItem,
     loadFromServer,
+    syncToServer,
     loadUserInfo,
     startPolling,
     stopPolling,

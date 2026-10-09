@@ -22,7 +22,7 @@
     </div>
 
     <div v-else class="banners-list">
-      <div v-for="(banner, index) in banners" :key="banner.id" class="banner-card">
+      <div v-for="(banner) in banners" :key="banner.id" class="banner-card">
         <div class="banner-image">
           <img :src="banner.imageUrl" alt="Promo banner" />
         </div>

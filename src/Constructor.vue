@@ -587,10 +587,26 @@ const updateRestaurantInfo = (newData: typeof menuStore.restaurantInfo) => {
 
     <input type="file" ref="fileInputRef" style="display: none" accept=".xlsx,.xls,.json" multiple @change="handleFileUpload" />
 
-    <div v-if="isBlocked" style="position: fixed; top: 0; left: 0; right: 0; background: #dc3545; color: white; padding: 15px; text-align: center; z-index: 9999; font-weight: bold; font-size: 16px;">
-      ВНИМАНИЕ: Ваш аккаунт заблокирован за неуплату. Оплатите подписку для восстановления доступа (публичное меню также скрыто).
+    
+    
+    <div v-if="isBlocked && !isMenuOpen" style="position: fixed; inset: 0; z-index: 1000; display: flex; align-items: center; justify-content: center; background: rgba(0,0,0,0.6); backdrop-filter: blur(4px);">
+      <!-- Accessible Hamburger when blocked -->
+      <button @click="isMenuOpen = true; sidebarView = 'main'" title="Отрыть меню"
+        style="position: absolute; top: 16px; left: 16px; width: 40px; height: 40px; border-radius: 8px; background: var(--bg-panel, #fff); border: 1px solid var(--border-color, #e5e7eb); color: var(--text-main, #000); display: flex; align-items: center; justify-content: center; cursor: pointer; z-index: 1001; box-shadow: 0 4px 12px rgba(0,0,0,0.1);">
+        <MenuIcon :size="24" stroke-width="2" />
+      </button>
+
+      <div style="background: var(--bg-panel); color: var(--text-main); padding: 32px; border-radius: 16px; max-width: 400px; text-align: center; box-shadow: 0 10px 30px rgba(0,0,0,0.5); border: 1px solid rgba(239, 68, 68, 0.5);">
+        <div style="color: #ef4444; margin-bottom: 16px;">
+          <svg width="48" height="48" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"></circle><line x1="12" y1="8" x2="12" y2="12"></line><line x1="12" y1="16" x2="12.01" y2="16"></line></svg>
+        </div>
+        <h3 style="margin: 0 0 12px; font-size: 20px;">Доступ ограничен</h3>
+        <p style="margin: 0 0 24px; opacity: 0.8; line-height: 1.5; font-size: 14px;">Ваш аккаунт заблокирован за неуплату. Оплатите подписку для восстановления доступа к конструктору.</p>
+        <button @click="isMenuOpen = true; sidebarView = 'payment'" style="background: #ef4444; color: white; border: none; padding: 12px 24px; border-radius: 8px; font-weight: bold; cursor: pointer; font-size: 14px; width: 100%;">Перейти к оплате</button>
+      </div>
     </div>
-    <div class="constructor-layout" :style="isBlocked && sidebarView !== 'payment' ? 'pointer-events: none; opacity: 0.5;' : ''">
+
+    <div class="constructor-layout">
 
       <div v-if="isMobileSidebarOpen" class="mobile-sidebar-backdrop" @click="isMobileSidebarOpen = false"></div>
         <aside class="sidebar" :class="{ 'mobile-open': isMobileSidebarOpen }">
@@ -626,7 +642,7 @@ const updateRestaurantInfo = (newData: typeof menuStore.restaurantInfo) => {
               Предпросмотр
             </button>
           </div>
-          <nav class="sidebar-menu">
+          <nav class="sidebar-menu" :style="isBlocked && sidebarView !== 'payment' ? 'pointer-events: none; opacity: 0.5;' : ''">
           <button v-for="tab in ['navigation', 'colors', 'branding', 'banners', 'general', 'qrcode', 'orders']" :key="tab"
             class="menu-btn" :class="{ active: activeTab === tab }" @click="activeTab = tab as any; isMobileSidebarOpen = false">
             <span class="icon" style="display: flex; align-items: center;">

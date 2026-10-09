@@ -79,11 +79,11 @@ const addGroup = () => {
   });
 };
 
-const removeGroup = (idx: number) => {
+const removeGroup = (idx: any) => {
   localModifiers.value.splice(idx, 1);
 };
 
-const addOption = (gIdx: number) => {
+const addOption = (gIdx: any) => {
   localModifiers.value[gIdx].options.push({
     id: 'opt-' + Date.now(),
     name: '',
@@ -91,7 +91,7 @@ const addOption = (gIdx: number) => {
   });
 };
 
-const removeOption = (gIdx: number, oIdx: number) => {
+const removeOption = (gIdx: any, oIdx: any) => {
   localModifiers.value[gIdx].options.splice(oIdx, 1);
 };
 

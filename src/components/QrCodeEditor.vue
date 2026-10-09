@@ -51,7 +51,7 @@ const fixQrUrl = async () => {
         const res = await fetch('/api/lan-ip');
         if (res.ok) {
           const data = await res.json();
-          if (data.ip && data.ip !== 'localhost') {
+          if (data.ip && data.ip !== 'localhost' && data.ip !== '127.0.0.1') {
             const port = window.location.port ? `:${window.location.port}` : '';
             origin = `${window.location.protocol}//${data.ip}${port}`;
           }
@@ -264,6 +264,7 @@ const downloadQRCode = async () => {
               :background="modelValue.qrSettings?.bgColor || '#ffffff'"
               level="H" 
               render-as="svg"
+              :image-settings="{ src: modelValue.logo || '/favicon-02.png', width: 50, height: 50, excavate: true }"
             />
           </div>
           <div 

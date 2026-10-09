@@ -692,12 +692,10 @@ import SettingsbarForClient from '../components/SettingsbarForClient.vue';
 import { Check, Receipt, ShoppingCart, Star, ConciergeBell, ClipboardCheck, Armchair, Clock, ChefHat, CheckCircle, XCircle, ChevronDown, X } from 'lucide-vue-next';
 
 // Динамическое определение IP-адреса хоста
-const hostIP = window.location.hostname;
-let API_URL = (import.meta as any).env.VITE_API_URL;
-// Если VITE_API_URL не задан или это локальный/сетевой IP из .env (который мог измениться), 
-// надежнее использовать реальный hostname (IP-адрес), по которому клиент открыл страницу.
-if (!API_URL || /^(?:[0-9]{1,3}\.){3}[0-9]{1,3}$/.test(window.location.hostname) || window.location.hostname === 'localhost') {
-  API_URL = `http://${hostIP}:3000`;
+let API_URL = import.meta.env.VITE_API_URL || '';
+const isLocal = /^(?:[0-9]{1,3}\.){3}[0-9]{1,3}$/.test(window.location.hostname) || window.location.hostname === 'localhost';
+if (!import.meta.env.VITE_API_URL && isLocal) {
+  API_URL = `http://${window.location.hostname}:3000`;
 }
 const router = useRouter();
 
@@ -765,10 +763,16 @@ const getCurrentTimeStr = () => {
 const showCheckoutModal = ref(false);
 const checkoutStep = ref<1 | 2>(1);
 
-const feedbackOptions = [
-  { id: 'kitchen', label: 'Кухня', icon: ConciergeBell },
-  { id: 'service', label: 'Обслуживание', icon: ClipboardCheck },
-  { id: 'interior', label: 'Интерьер', icon: Armchair }
+const badFeedbackOptions = [
+  { id: 'taste', label: 'Невкусно', icon: ConciergeBell },
+  { id: 'wait', label: 'Долгое ожидание', icon: Clock },
+  { id: 'service', label: 'Сервис', icon: ClipboardCheck },
+];
+
+const goodFeedbackOptions = [
+  { id: 'taste', label: 'Очень вкусно', icon: ChefHat },
+  { id: 'atmosphere', label: 'Атмосфера', icon: Armchair },
+  { id: 'service', label: 'Отличный сервис', icon: Star },
 ];
 
   const submitFeedback = async (orderId: string) => {
@@ -955,7 +959,7 @@ const loadPreviewFromStorage = () => {
     const savedModeStr = localStorage.getItem('menu_order_mode');
     if (savedModeStr) {
       const modeMap = { menu: 'CATALOG', cart: 'CART', order: 'ORDER' };
-      if (modeMap[savedModeStr]) store.orderMode = modeMap[savedModeStr];
+      if (modeMap[savedModeStr as keyof typeof modeMap]) store.orderMode = modeMap[savedModeStr as keyof typeof modeMap];
     }
 
     const savedRestaurantInfo = localStorage.getItem('preview_restaurantInfo');
@@ -1046,8 +1050,10 @@ const currentCallRestaurantId = ref('');
   });
 
 
+
+
+
 const openCallWaiterModalFromCart = () => {
-    currentCallSource.value = 'global';
   currentCallTable.value = customerForm.value.tableNumber || '';
   currentCallRestaurantId.value = (restaurantInfo.value as any).id;
   showCallWaiterModal.value = true;
@@ -1299,7 +1305,7 @@ const confirmOrder = async () => {
   const preparedItems = cartItems.value.map(item => {
     let itemName = getRussianName(item.name);
     if (item.selectedModifiers && item.selectedModifiers.length > 0) {
-      const mods = item.selectedModifiers.map((m) => m.name).join(', ');
+      const mods = item.selectedModifiers.map((m: any) => m.name).join(', ');
       itemName += ` (${mods})`;
     }
     return {

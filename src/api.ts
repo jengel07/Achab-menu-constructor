@@ -3,10 +3,12 @@
  * Автоматически добавляет JWT-токен и базовый URL из .env
  */
 
-let BASE_URL = import.meta.env.VITE_API_URL;
-if (!BASE_URL || /^(?:[0-9]{1,3}\.){3}[0-9]{1,3}$/.test(window.location.hostname) || window.location.hostname === 'localhost') {
+let BASE_URL = import.meta.env.VITE_API_URL || '';
+const isLocal = /^(?:[0-9]{1,3}\.){3}[0-9]{1,3}$/.test(window.location.hostname) || window.location.hostname === 'localhost';
+if (!import.meta.env.VITE_API_URL && isLocal) {
   BASE_URL = `http://${window.location.hostname}:3000`;
 }
+
 
 
 // ============================================================
@@ -138,6 +140,7 @@ export const menuApi = {
       categories: unknown[];
       items: unknown[];
       generalSettings: Record<string, unknown>;
+      orderMode?: string;
     }>(`/api/menu/${restaurantId}`),
 
   save: (restaurantId: string, data: any) =>

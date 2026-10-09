@@ -169,9 +169,12 @@ const openConfirmModal = (res: any) => {
 const confirmPayment = async () => {
   try {
     const token = localStorage.getItem('authToken');
-    const API_URL = import.meta.env.VITE_API_URL || 'http://localhost:3000';
-    
-    await fetch(`${API_URL}/api/superadmin/restaurants/${confirmData.value.restaurantId}/confirm-payment`, {
+    let API_URL = import.meta.env.VITE_API_URL || '';
+const isLocal = /^(?:[0-9]{1,3}\.){3}[0-9]{1,3}$/.test(window.location.hostname) || window.location.hostname === 'localhost';
+if (!import.meta.env.VITE_API_URL && isLocal) {
+  API_URL = `http://${window.location.hostname}:3000`;
+}
+await fetch(`${API_URL}/api/superadmin/restaurants/${confirmData.value.restaurantId}/confirm-payment`, {
       method: 'POST',
       headers: { 
         'Authorization': `Bearer ${token}`,

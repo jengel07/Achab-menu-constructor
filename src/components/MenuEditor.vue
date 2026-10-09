@@ -56,10 +56,12 @@ const syncWithServer = async (updatedItems: MenuItem[]) => {
   const currentUser = localStorage.getItem('currentUser');
   const restaurantId = currentUser ? JSON.parse(currentUser).restaurantId : null;
   const token = localStorage.getItem('authToken');
-  let apiUrl = import.meta.env.VITE_API_URL;
-  if (!apiUrl || /^(?:[0-9]{1,3}\.){3}[0-9]{1,3}$/.test(window.location.hostname) || window.location.hostname === 'localhost') {
-    apiUrl = `http://${window.location.hostname}:3000`;
-  }
+  let apiUrl = import.meta.env.VITE_API_URL || '';
+const isLocal = /^(?:[0-9]{1,3}\.){3}[0-9]{1,3}$/.test(window.location.hostname) || window.location.hostname === 'localhost';
+if (!import.meta.env.VITE_API_URL && isLocal) {
+  apiUrl = `http://${window.location.hostname}:3000`;
+}
+
 
   try {
     if (restaurantId && token) {
@@ -238,23 +240,23 @@ const closeModal = () => {
           <span style="font-size: 13px; font-weight: 600; color: #495057; margin-right: 4px;">Питание:</span>
           
           <label style="display: flex; align-items: center; gap: 6px; font-size: 13px; cursor: pointer; background: #fff; padding: 6px 12px; border-radius: 6px; border: 1px solid #ced4da;">
-            <input type="checkbox" v-model="dietaryFilters.noNuts" />
+            <input type="checkbox" v-model="dietaryFilters.nutFree" />
             🥜 Без орехов
           </label>
 
           <label style="display: flex; align-items: center; gap: 6px; font-size: 13px; cursor: pointer; background: #fff; padding: 6px 12px; border-radius: 6px; border: 1px solid #ced4da;">
-            <input type="checkbox" v-model="dietaryFilters.noLactose" />
+            <input type="checkbox" v-model="dietaryFilters.dairyFree" />
             🥛 Без лактозы
           </label>
 
           <label style="display: flex; align-items: center; gap: 6px; font-size: 13px; cursor: pointer; background: #fff; padding: 6px 12px; border-radius: 6px; border: 1px solid #ced4da;">
-            <input type="checkbox" v-model="dietaryFilters.noGluten" />
+            <input type="checkbox" v-model="dietaryFilters.glutenFree" />
             🌾 Без глютена
           </label>
 
           <button 
-            v-if="dietaryFilters.noNuts || dietaryFilters.noLactose || dietaryFilters.noGluten" 
-            @click="dietaryFilters.noNuts = false; dietaryFilters.noLactose = false; dietaryFilters.noGluten = false"
+            v-if="dietaryFilters.nutFree || dietaryFilters.dairyFree || dietaryFilters.glutenFree" 
+            @click="dietaryFilters.nutFree = false; dietaryFilters.dairyFree = false; dietaryFilters.glutenFree = false"
             style="background: none; border: none; color: #521926; font-size: 12px; cursor: pointer; text-decoration: underline; margin-left: auto;"
           >
             очистить
@@ -457,10 +459,10 @@ const closeModal = () => {
     </div>
   </div>
 <ModifiersEditor 
-      v-if="showModifiersModal" 
+      v-if="showModifiersModal && editingItem" 
       :modifiers="editingItem.modifiers || []" 
       @close="showModifiersModal = false"
-      @save="mods => { editingItem.modifiers = mods; showModifiersModal = false; }" 
+      @save="mods => { if(editingItem) editingItem.modifiers = mods; showModifiersModal = false; }" 
     />
   </template>
 

@@ -46,10 +46,12 @@ const fetchBillingInfo = async () => {
   try {
     const token = localStorage.getItem('authToken');
     
-    let API_URL = import.meta.env.VITE_API_URL || 'http://localhost:3000';
-      if (!API_URL || /^(?:[0-9]{1,3}\.){3}[0-9]{1,3}$/.test(window.location.hostname) || window.location.hostname === 'localhost') {
-        API_URL = `http://${window.location.hostname}:3000`;
-      }
+    let API_URL = import.meta.env.VITE_API_URL || '';
+const isLocal = /^(?:[0-9]{1,3}\.){3}[0-9]{1,3}$/.test(window.location.hostname) || window.location.hostname === 'localhost';
+if (!import.meta.env.VITE_API_URL && isLocal) {
+  API_URL = `http://${window.location.hostname}:3000`;
+}
+
 
     const res = await fetch(`${API_URL}/api/my-restaurant-status`, {
       headers: { 'Authorization': `Bearer ${token}` }
@@ -110,37 +112,7 @@ const handlePaymentClick = () => {
   }
 };
 
-const submitPayment = async (months: number) => {
-  const amount = months === 12 ? '20 000' : '2 000';
-  
-  
-  submitting.value = true;
-  try {
-    const token = localStorage.getItem('authToken');
-    
-    let API_URL = import.meta.env.VITE_API_URL;
-    if (!API_URL) {
-      API_URL = `http://${window.location.hostname}:3000`;
-    }
-    
-    await fetch(`${API_URL}/api/my-restaurant-status/request`, {
-      method: 'POST',
-      headers: { 
-        'Authorization': `Bearer ${token}`,
-        'Content-Type': 'application/json' 
-      },
-      body: JSON.stringify({ months })
-    });
-    
-    if (currentRestaurant.value) {
-      currentRestaurant.value.status = 'PENDING_PAYMENT';
-    }
-  } catch (e) {
-    alert('Ошибка при отправке');
-  } finally {
-    submitting.value = false;
-  }
-};
+
 </script>
 
 <style scoped>

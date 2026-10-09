@@ -1,46 +1,18 @@
 const fs = require('fs');
-let path = 'src/views/ClientView.vue';
-let code = fs.readFileSync(path, 'utf8');
+let vue = fs.readFileSync('src/views/ClientView.vue', 'utf8');
 
-// 1. Remove setTimeout auto-close
-code = code.replace(
-  /setTimeout\(\(\) => \{\s*activeOrderId\.value = null;\s*activeOrderNumber\.value = null;\s*localStorage\.removeItem\('active_order_id'\);\s*\}, 30000\);/g,
-  `// Auto-close removed so user can leave feedback`
-);
+const regex = /let API_URL = \(import\.meta as any\)\.env\.VITE_API_URL;[\s\S]*?API_URL = `http:\/\/\$\{hostIP\}:3000`;\s*\}/;
 
-// 2. Fix the success state to keep Yandex review button
-// Right now it's:
-/*
-                    <div v-if="orderRating > 0 && !feedbackSubmitted" class="feedback-details-section">
-                       ...
-                      <div v-if="orderRating >= 4" class="yandex-review-prompt">
-                        <a :href="..." target="_blank" class="yandex-review-btn">
-                          Оставить отзыв на Яндекс Картах
-                        </a>
-                      </div>
-                    </div>
-                    <div v-if="feedbackSubmitted" class="feedback-success-msg">
-                      {{ tDyn('Спасибо за ваш отзыв!') }}
-                    </div>
-*/
-// We will change it so the Yandex button is OUTSIDE the `!feedbackSubmitted` block, or we just put the Yandex button inside the success block too.
+const replacement = `let API_URL = import.meta.env.VITE_API_URL || '';
+const isLocal = /^(?:[0-9]{1,3}\\.){3}[0-9]{1,3}$/.test(window.location.hostname) || window.location.hostname === 'localhost';
+if (!import.meta.env.VITE_API_URL && isLocal) {
+  API_URL = \`http://\${window.location.hostname}:3000\`;
+}`;
 
-const yandexBtnHtml = `
-                      <div v-if="orderRating >= 4" class="yandex-review-prompt" style="margin-top: 12px;">
-                        <a :href="store.generalSettings?.yandexReviewLink || 'https://yandex.ru/maps/org/jazzve/43328610653/reviews/'" target="_blank" class="yandex-review-btn">
-                          Оставить отзыв на Яндекс Картах
-                        </a>
-                      </div>
-`;
-
-code = code.replace(
-  /<div v-if="feedbackSubmitted" class="feedback-success-msg">\s*\{\{ tDyn\('Спасибо за ваш отзыв!'\) \}\}\s*<\/div>/,
-  `<div v-if="feedbackSubmitted" class="feedback-success-msg">
-                      {{ tDyn('Спасибо за ваш отзыв!') }}
-                      ${yandexBtnHtml}
-                    </div>`
-);
-
-fs.writeFileSync(path, code);
-console.log('Patched ClientView timeout and success state');
-
+if (regex.test(vue)) {
+  vue = vue.replace(regex, replacement);
+  fs.writeFileSync('src/views/ClientView.vue', vue);
+  console.log('Fixed ClientView.vue');
+} else {
+  console.log('Regex did not match in ClientView.vue');
+}

@@ -4,12 +4,12 @@
       <div class="modal-header">
         <h3 class="modal-title">{{ item.name?.ru || item.name }}</h3>
         <button type="button" class="close-btn" @click="$emit('close')">
-          <X size="20" stroke-width="2" />
+          <X :size="20" stroke-width="2" />
         </button>
       </div>
       
       <div class="modal-body">
-        <div v-for="(group, gIdx) in modifiers" :key="group.id" class="modifier-group">
+        <div v-for="(group) in modifiers" :key="group.id" class="modifier-group">
           <div class="group-header">
             <div class="group-name">
               {{ group.name }} 

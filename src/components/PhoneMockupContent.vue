@@ -178,7 +178,7 @@
     alignItems: 'center',
     boxShadow: '0 4px 12px rgba(0, 0, 0, 0.15)',
     cursor: 'pointer',
-    zIndex: 9999,
+    zIndex: 100,
     border: 'none'
   }">
   <ConciergeBell :size="24" />
@@ -368,7 +368,7 @@
     alignItems: 'center',
     boxShadow: '0 4px 12px rgba(0, 0, 0, 0.15)',
     cursor: 'pointer',
-    zIndex: 9999,
+    zIndex: 100,
     border: 'none'
   }">
   <ConciergeBell :size="24" />
@@ -578,7 +578,7 @@ const currentScreen = ref<'menu' | 'cart'>('menu');
 const activeTab = ref<'menu' | 'qrcode'>('menu');
 const modifierItem = ref<any>(null);
 const activeModal = ref<'none' | 'language' | 'search' | 'filters' | 'share' | 'cart' | 'checkout'>('none');
-const viewMode = ref<'grid' | 'list'>('grid');
+const viewMode = ref<'grid' | 'list' | 'full'>('grid');
 const selectedCategory = ref<string | null>(null);
 const searchQuery = ref('');
 const selectedLanguage = ref('Русский');
@@ -743,7 +743,7 @@ const processBatch = async () => {
   
   for (const [targetCode, group] of Object.entries(byLang)) {
     try {
-      const res = await fetch(`http://localhost:3000/api/translate`, {
+      const res = await fetch(`/api/translate`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ texts: group.items, targetLang: targetCode })
@@ -972,3 +972,4 @@ const openPreview = () => {
   min-width: 90px;
 }
 </style>
+
